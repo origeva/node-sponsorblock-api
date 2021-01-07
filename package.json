@@ -1,0 +1,25 @@
+{
+	"name": "sponsorblock-api",
+	"version": "0.1.0",
+	"description": "Node module for SponsorBlock web API endpoints.",
+	"main": "index.js",
+	"scripts": {
+		"start": "ts-node src",
+		"dev": "nodemon",
+		"test": "ts-node test"
+	},
+	"keywords": [],
+	"author": "Ori Geva",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node-fetch": "^2.5.7",
+		"@types/uuid": "^8.3.0",
+		"nodemon": "^2.0.6",
+		"ts-node": "^9.1.1",
+		"typescript": "^4.1.3"
+	},
+	"dependencies": {
+		"node-fetch": "^2.6.1",
+		"uuid": "^8.3.2"
+	}
+}
