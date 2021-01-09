@@ -1,5 +1,4 @@
 import SponsorBlock, { SponsorBlockVIP, SortType } from '../src/index';
-import Segment, { Category } from '../src/types/segment.model';
 // Tests
 import { getSegmentsTest } from './tests/getSegmentsTest';
 import { isUserVIPTest } from './tests/isUserVIPTest';

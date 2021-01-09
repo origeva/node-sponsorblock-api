@@ -2,21 +2,19 @@ import fetch, { Response } from 'node-fetch';
 import config from './config.json';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-import Segment, { Category } from './types/segment.model';
+import { Segment, DBSegment, Category, dbsegmentToSegment, segmentsToDBSegments } from './types/segment.model';
 import { Vote, CategoryVote } from './types/vote.model';
-import Video from './types/video.model';
+import { DBVideo, dbvideoToVideo, Video } from './types/video.model';
+
+// interface SponsorBlockInterface {
+// 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
+// 	submitSegment(segment: Segment): Promise<void>;
+// }
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
  * Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}
  */
-
-// interface SponsorBlockInterface {
-// 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
-
-// 	submitSegment(segment: Segment): Promise<void>;
-// }
-
 export default class SponsorBlock {
 	constructor(public userID: string, baseURL?: string) {
 		this.baseURL = baseURL || config.baseURL;
@@ -41,33 +39,36 @@ export default class SponsorBlock {
 	// 1 GET /api/skipSegments
 	async getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]> {
 		let query = `?videoID=${videoID}`;
-		if (categories.length !== 0) {
+		if (categories.length > 0) {
 			query += `&categories=${JSON.stringify(categories)}`;
 		}
 		console.log(query);
 
 		let res = await fetch(`${this.baseURL}/api/skipSegments${query}`);
 		this.statusCheck(res);
-		return await res.json();
+
+		return (await res.json()).map(dbsegmentToSegment);
 	}
 
 	// 2 A POST /api/skipSegments
-	async postSegment(segment: Segment): Promise<void> {
-		segment.UUID = undefined;
-		let res = await fetch(`${this.baseURL}/api/skipSegments`, {
-			method: 'POST',
-			body: JSON.stringify(segment),
-			headers: { 'Content-Type': 'application/json' },
-		});
+	async postSegment(videoID: string, segment: Segment): Promise<void> {
+		let res = await fetch(
+			`${this.baseURL}/api/skipSegments?videoID=${videoID}&startTime=${segment.startTime}&endTime=${segment.endTime}&category=${segment.category}&userID=${this.userID}`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
 		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 2 B POST /api/skipSegments
-	async postSegments(segments: Segment[]): Promise<void> {
+	async postSegments(videoID: string, ...segments: Segment[]): Promise<void> {
+		segments.map(segmentsToDBSegments).forEach((segment) => (segment.UUID = undefined));
 		let res = await fetch(`${this.baseURL}/api/skipSegments`, {
 			method: 'POST',
-			body: JSON.stringify(segments),
+			body: JSON.stringify({ videoID, userID: this.userID, segments }),
 			headers: { 'Content-Type': 'application/json' },
 		});
 		this.statusCheck(res);
@@ -75,17 +76,23 @@ export default class SponsorBlock {
 	}
 
 	// 3 GET /api/skipSegments/:sha256HashPrefix
-	async getSegmentsPrivately(videoID: string, category?: Category /*, categories?: Category[]*/): Promise<Video[]> {
-		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, config.hashPrefixRecommendation);
-		let query = category ? `?category=${category}` : '';
+	async getSegmentsPrivately(
+		videoID: string,
+		prefixLength: PrefixRange = config.hashPrefixRecommendation as PrefixRange,
+		...categories: Category[]
+	): Promise<Video[]> {
+		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, prefixLength);
+		let query = '';
+		if (categories.length > 0) {
+			query += `?categories=${JSON.stringify(categories)}`;
+		}
 		console.log(query + hashPrefix);
 		let res = await fetch(`${this.baseURL}/api/skipSegments/${hashPrefix}${query}`);
 		this.statusCheck(res);
-		return await res.json();
+		return (await res.json()).map(dbvideoToVideo);
 	}
 
 	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
-
 	async postNormalVote(vote: Vote): Promise<void> {
 		vote.type = vote.type === 'down' ? 0 : vote.type === 'up' ? 1 : vote.type;
 		let query = `?UUID=${vote.UUID}&userID=${this.userID}&type=${vote.type}`;
@@ -212,6 +219,10 @@ export default class SponsorBlock {
 }
 
 export class SponsorBlockVIP extends SponsorBlock {
+	constructor(public userID: string, baseURL?: string) {
+		super(userID, baseURL);
+		this.isUserVIP().then((res) => res.vip || console.log('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
+	}
 	// VIP Calls
 	// 14 POST /api/noSegments
 	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
@@ -250,7 +261,7 @@ export class SponsorBlockVIP extends SponsorBlock {
 	}
 
 	// 16 POST /api/warnUser
-	async warnUser(publicUserID: string, enabled?: boolean) {
+	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
 		let res = await fetch(`${this.baseURL}/api/warnUser`, {
 			method: 'POST',
 			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
@@ -279,7 +290,7 @@ export class SponsorBlockAdmin extends SponsorBlockVIP {
 		if (res.status == 400) {
 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
 		} else if (res.status == 403) {
-			throw new Error('Unauthorized (You are not a VIP)');
+			throw new Error('Unauthorized (You are not an admin)');
 		} else if (res.status != 200) {
 			throw new Error(`Status code not 200 (${res.status})`);
 		}
@@ -288,3 +299,35 @@ export class SponsorBlockAdmin extends SponsorBlockVIP {
 }
 
 export type SortType = 'minutesSaved' | 'viewCount' | 'totalSubmissions' | 0 | 1 | 2;
+
+export type PrefixRange =
+	| 3
+	| 4
+	| 5
+	| 6
+	| 7
+	| 8
+	| 9
+	| 10
+	| 11
+	| 12
+	| 13
+	| 14
+	| 15
+	| 16
+	| 17
+	| 18
+	| 19
+	| 20
+	| 21
+	| 22
+	| 23
+	| 24
+	| 25
+	| 26
+	| 27
+	| 28
+	| 29
+	| 30
+	| 31
+	| 32;
