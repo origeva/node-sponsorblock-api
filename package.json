@@ -1,12 +1,21 @@
 {
 	"name": "sponsorblock-api",
 	"version": "0.1.0",
-	"description": "Node module for SponsorBlock web API endpoints.",
-	"main": "index.js",
+	"description": "Node module wrapper for SponsorBlock web API.",
+	"main": "./lib/index",
+	"types": "./lib",
+	"files": [
+		"lib"
+	],
+	"homepage": "https://github.com/origeva/node-sponsorblock-api",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/origeva/node-sponsorblock-api"
+	},
 	"scripts": {
-		"start": "ts-node src",
 		"dev": "nodemon",
-		"test": "ts-node test"
+		"test": "ts-node test",
+		"build": "npm test && tsc"
 	},
 	"keywords": [],
 	"author": "Ori Geva",
