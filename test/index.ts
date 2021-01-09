@@ -1,8 +1,5 @@
-import SponsorBlock, { SponsorBlockVIP, SortType } from '../src';
+import SponsorBlock, { SponsorBlockVIP, SortType } from '../src/index';
 import Segment, { Category } from '../src/types/segment.model';
-import Vote, { VoteType } from '../src/types/vote.model';
-import { version as uuidVersion, v4 } from 'uuid';
-import { strict as assert } from 'assert';
 // Tests
 import { getSegmentsTest } from './tests/getSegmentsTest';
 import { isUserVIPTest } from './tests/isUserVIPTest';

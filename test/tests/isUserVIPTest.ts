@@ -1,4 +1,4 @@
-import SponsorBlock from '../../src';
+import SponsorBlock from '../../src/index';
 import { strict as assert } from 'assert';
 
 export async function isUserVIPTest(sponsorBlock?: SponsorBlock): Promise<void> {
