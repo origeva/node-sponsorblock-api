@@ -1,21 +1,28 @@
-import fetch from 'node-fetch';
-import config from '../config.json';
+import fetch, { Response } from 'node-fetch';
+import config from './config.json';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-import Segment, { Category, PostSegment } from './types/segment.model';
-import Vote, { CategoryVote } from './types/vote.model';
+import Segment, { Category } from './types/segment.model';
+import { Vote, CategoryVote } from './types/vote.model';
 import Video from './types/video.model';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
  * Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}
  */
+
+// interface SponsorBlockInterface {
+// 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
+
+// 	submitSegment(segment: Segment): Promise<void>;
+// }
+
 export default class SponsorBlock {
 	constructor(public userID: string, baseURL?: string) {
 		this.baseURL = baseURL || config.baseURL;
 	}
 
-	static newUser() {
+	static newUser(): SponsorBlock {
 		let newUserID = uuidv4();
 		console.info(
 			'\x1b[36m%s\x1b[0m',
@@ -34,40 +41,25 @@ export default class SponsorBlock {
 	// 1 GET /api/skipSegments
 	async getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]> {
 		let query = `?videoID=${videoID}`;
-		if (categories) {
-			query += `&categories=[`;
-			categories.forEach((val) => (query += `"${val}",`));
-			query = query.substring(0, query.length - 1) + `]`;
+		if (categories.length !== 0) {
+			query += `&categories=${JSON.stringify(categories)}`;
 		}
 		console.log(query);
 
 		let res = await fetch(`${this.baseURL}/api/skipSegments${query}`);
-		if (res.status == 404) {
-			throw new Error('Not Found');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		return await res.json();
 	}
 
 	// 2 A POST /api/skipSegments
-	async postSegment(segment: PostSegment): Promise<void> {
+	async postSegment(segment: Segment): Promise<void> {
+		segment.UUID = undefined;
 		let res = await fetch(`${this.baseURL}/api/skipSegments`, {
 			method: 'POST',
 			body: JSON.stringify(segment),
 			headers: { 'Content-Type': 'application/json' },
 		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Rejected by auto moderator (Reason will be sent in the response)');
-		} else if (res.status == 429) {
-			throw new Error('Rate Limit (Too many for the same user or IP)');
-		} else if (res.status == 409) {
-			throw new Error('Duplicate');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
@@ -78,17 +70,7 @@ export default class SponsorBlock {
 			body: JSON.stringify(segments),
 			headers: { 'Content-Type': 'application/json' },
 		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Rejected by auto moderator (Reason will be sent in the response)');
-		} else if (res.status == 429) {
-			throw new Error('Rate Limit (Too many for the same user or IP)');
-		} else if (res.status == 409) {
-			throw new Error('Duplicate');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
@@ -98,26 +80,17 @@ export default class SponsorBlock {
 		let query = category ? `?category=${category}` : '';
 		console.log(query + hashPrefix);
 		let res = await fetch(`${this.baseURL}/api/skipSegments/${hashPrefix}${query}`);
-		if (res.status == 404) {
-			throw new Error('Not Found');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		return await res.json();
 	}
 
 	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
 
 	async postNormalVote(vote: Vote): Promise<void> {
+		vote.type = vote.type === 'down' ? 0 : vote.type === 'up' ? 1 : vote.type;
 		let query = `?UUID=${vote.UUID}&userID=${this.userID}&type=${vote.type}`;
 		let res = await fetch(`${this.baseURL}/api/voteOnSponsorTime${query}`);
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 405) {
-			throw new Error('Duplicate');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
@@ -125,13 +98,7 @@ export default class SponsorBlock {
 	async postCategoryVote(vote: CategoryVote): Promise<void> {
 		let query = `?UUID=${vote.UUID}&userID=${this.userID}&category=${vote.category}`;
 		let res = await fetch(`${this.baseURL}/api/voteOnSponsorTime${query}`);
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 405) {
-			throw new Error('Duplicate');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
@@ -141,22 +108,14 @@ export default class SponsorBlock {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 6 GET /api/getViewsForUser
 	async getViews(): Promise<number> {
 		let res = await fetch(`${this.baseURL}/api/getViewsForUser?userID=${this.userID}`);
-		if (res.status == 404) {
-			throw new Error('Not Found');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		let data = await res.json();
 		return data.viewCount;
 	}
@@ -164,11 +123,7 @@ export default class SponsorBlock {
 	// 7 GET /api/getSavedTimeForUser
 	async getSavedTime(): Promise<number> {
 		let res = await fetch(`${this.baseURL}/api/getSavedTimeForUser?userID=${this.userID}`);
-		if (res.status == 404) {
-			throw new Error('Not Found');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		let data = await res.json();
 		return data.timeSaved;
 	}
@@ -179,22 +134,14 @@ export default class SponsorBlock {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 9 GET /api/getUsername
 	async getUsername(): Promise<string> {
 		let res = await fetch(`${this.baseURL}/api/getUsername?userID=${this.userID}`);
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		let data = await res.json();
 		return data.userName;
 	}
@@ -203,49 +150,69 @@ export default class SponsorBlock {
 
 	// 10 GET /api/getTopUsers
 	async getTopUsers(sortType: SortType): Promise<{ userNames: string[]; viewCounts: number[]; totalSubmissions: number[]; minutesSaved: number[] }> {
+		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
 		let res = await fetch(`${this.baseURL}/api/getTopUsers?sortType=${sortType}`);
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		return await res.json();
 	}
 
 	// 11 GET /api/getTotalStats
 	async getTotalStats(): Promise<{ userCount: number; viewCount: number; totalSubmissions: number; minutesSaved: number }> {
 		let res = await fetch(`${this.baseURL}/api/getTotalStats`);
-		if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		return await res.json();
 	}
 
 	// 12 GET /api/getDaysSavedFormatted
 	async getDaysSavedFormatted(): Promise<number> {
 		let res = await fetch(`${this.baseURL}/api/getDaysSavedFormatted`);
-		if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
+		this.statusCheck(res);
 		let data = await res.json();
 		return data.daysSaved;
 	}
 
-	// VIP Calls
-
 	// 13 GET /api/isUserVIP
 	async isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }> {
 		let res = await fetch(`${this.baseURL}/api/isUserVIP?userID=${this.userID}`);
-		if (res.status == 400) {
+		this.statusCheck(res);
+		return await res.json();
+	}
+
+	// Legacy Calls
+	async legacyGetVideoSponsorTimes(videoID: string): Promise<{ sponsorTimes: number[]; UUIDs: string[] }> {
+		let res = await fetch(`${this.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
+		this.statusCheck(res);
+		return await res.json();
+	}
+
+	// Work on Segment and Video models <==========
+	async legacyPostVideoSponsorTimes(videoID: string, startTime: number, endTime: number, userID: string) {
+		let res = await fetch(`${this.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
+		this.statusCheck(res);
+		return await res.json();
+	}
+
+	private statusCheck(res: Response) {
+		if (res.status === 400) {
 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status != 200) {
+		} else if (res.status == 403) {
+			throw new Error('Rejected by auto moderator (Reason will be sent in the response)');
+		} else if (res.status === 404) {
+			throw new Error('Not Found');
+		} else if (res.status === 405) {
+			throw new Error('Duplicate');
+		} else if (res.status === 409) {
+			throw new Error('Duplicate');
+		} else if (res.status === 429) {
+			throw new Error('Rate Limit (Too many for the same user or IP)');
+		} else if (res.status !== 200) {
 			throw new Error(`Status code not 200 (${res.status})`);
 		}
-		return await res.json();
 	}
 }
 
 export class SponsorBlockVIP extends SponsorBlock {
+	// VIP Calls
 	// 14 POST /api/noSegments
 	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
 		let res = await fetch(`${this.baseURL}/api/noSegments`, {
@@ -320,8 +287,4 @@ export class SponsorBlockAdmin extends SponsorBlockVIP {
 	}
 }
 
-export enum SortType {
-	MINUTES_SAVED,
-	VIEW_COUNT,
-	TOTAL_SUBMISSIONS,
-}
+export type SortType = 'minutesSaved' | 'viewCount' | 'totalSubmissions' | 0 | 1 | 2;

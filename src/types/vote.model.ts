@@ -1,14 +1,17 @@
 import { Category } from './segment.model';
 
-export default class Vote {
-	constructor(public UUID: string, public type: VoteType) {}
-}
+export type Vote = { UUID: string; type: 'down' | 'up' | 0 | 1 };
+export type CategoryVote = { UUID: string; category: Category };
 
-export class CategoryVote {
-	constructor(public UUID: string, public category: Category) {}
-}
+// export default class Vote {
+// 	constructor(public UUID: string, public type: VoteType) {}
+// }
 
-export enum VoteType {
-	DOWN,
-	UP,
-}
+// export class CategoryVote {
+// 	constructor(public UUID: string, public category: Category) {}
+// }
+
+// export enum VoteType {
+// 	DOWN,
+// 	UP,
+// }
