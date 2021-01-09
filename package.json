@@ -2,8 +2,8 @@
 	"name": "sponsorblock-api",
 	"version": "0.1.0",
 	"description": "Node module wrapper for SponsorBlock web API.",
-	"main": "./lib/index",
-	"types": "./lib",
+	"main": "./lib/index.js",
+	"types": "./lib/index.d.ts",
 	"files": [
 		"lib"
 	],
@@ -17,7 +17,12 @@
 		"test": "ts-node test",
 		"build": "npm test && tsc"
 	},
-	"keywords": [],
+	"keywords": [
+		"sponsorblock-api",
+		"youtube",
+		"sponsor",
+		"api"
+	],
 	"author": "Ori Geva",
 	"license": "ISC",
 	"devDependencies": {
