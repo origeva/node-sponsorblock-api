@@ -22,9 +22,6 @@ lib-cov
 # Bower dependency directory (https://bower.io/)
 bower_components
 
-# node-waf configuration
-.lock-wscript
-
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
@@ -32,14 +29,14 @@ build/Release
 node_modules/
 jspm_packages/
 
-# TypeScript v1 declaration files
-typings/
-
 # TypeScript cache
 *.tsbuildinfo
 
 # Optional npm cache directory
 .npm
+
+# Output of 'npm pack'
+*.tgz
 
 # Optional eslint cache
 .eslintcache
