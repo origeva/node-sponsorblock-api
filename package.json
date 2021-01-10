@@ -15,7 +15,10 @@
 	"scripts": {
 		"dev": "nodemon",
 		"test": "ts-node test",
-		"build": "npm test && tsc"
+		"build": "npm test && echo \u001b[92mTest passed\u001b[0m & rd /s /q lib & echo Building... & tsc",
+		"build:force": "tsc",
+		"clean": "rd /s /q lib",
+		"prepare": "npm test && echo \u001b[92mTest passed\u001b[0m & rd /s /q lib & echo Building... & tsc"
 	},
 	"keywords": [
 		"sponsorblock-api",
