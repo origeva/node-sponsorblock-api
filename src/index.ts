@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Segment, DBSegment, Category, dbsegmentToSegment, segmentsToDBSegments } from './types/segment.model';
 import { Vote, CategoryVote } from './types/vote.model';
 import { DBVideo, dbvideoToVideo, Video } from './types/video.model';
+import { dbuserStatToUserStats, OverallStats, UserStat } from './types/stats.model';
 
 // interface SponsorBlockInterface {
 // 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
@@ -42,8 +43,6 @@ export default class SponsorBlock {
 		if (categories.length > 0) {
 			query += `&categories=${JSON.stringify(categories)}`;
 		}
-		console.log(query);
-
 		let res = await fetch(`${this.baseURL}/api/skipSegments${query}`);
 		this.statusCheck(res);
 
@@ -76,20 +75,15 @@ export default class SponsorBlock {
 	}
 
 	// 3 GET /api/skipSegments/:sha256HashPrefix
-	async getSegmentsPrivately(
-		videoID: string,
-		prefixLength: PrefixRange = config.hashPrefixRecommendation as PrefixRange,
-		...categories: Category[]
-	): Promise<Video[]> {
+	async getSegmentsPrivately(videoID: string, prefixLength: PrefixRange = config.hashPrefixRecommendation as PrefixRange, ...categories: Category[]): Promise<Video> {
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, prefixLength);
 		let query = '';
 		if (categories.length > 0) {
 			query += `?categories=${JSON.stringify(categories)}`;
 		}
-		console.log(query + hashPrefix);
 		let res = await fetch(`${this.baseURL}/api/skipSegments/${hashPrefix}${query}`);
 		this.statusCheck(res);
-		return (await res.json()).map(dbvideoToVideo);
+		return dbvideoToVideo(((await res.json()) as DBVideo[]).find((video) => video.videoID === videoID) as DBVideo);
 	}
 
 	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
@@ -156,15 +150,15 @@ export default class SponsorBlock {
 	// Stat Calls
 
 	// 10 GET /api/getTopUsers
-	async getTopUsers(sortType: SortType): Promise<{ userNames: string[]; viewCounts: number[]; totalSubmissions: number[]; minutesSaved: number[] }> {
+	async getTopUsers(sortType: SortType): Promise<UserStat[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
 		let res = await fetch(`${this.baseURL}/api/getTopUsers?sortType=${sortType}`);
 		this.statusCheck(res);
-		return await res.json();
+		return dbuserStatToUserStats(await res.json());
 	}
 
 	// 11 GET /api/getTotalStats
-	async getTotalStats(): Promise<{ userCount: number; viewCount: number; totalSubmissions: number; minutesSaved: number }> {
+	async getTotalStats(): Promise<OverallStats> {
 		let res = await fetch(`${this.baseURL}/api/getTotalStats`);
 		this.statusCheck(res);
 		return await res.json();
@@ -186,15 +180,27 @@ export default class SponsorBlock {
 	}
 
 	// Legacy Calls
+	/**
+	 *
+	 * @param videoID
+	 * @deprecated This method is deprecated and should not be used.
+	 */
 	async legacyGetVideoSponsorTimes(videoID: string): Promise<{ sponsorTimes: number[]; UUIDs: string[] }> {
 		let res = await fetch(`${this.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
 		this.statusCheck(res);
 		return await res.json();
 	}
 
-	// Work on Segment and Video models <==========
-	async legacyPostVideoSponsorTimes(videoID: string, startTime: number, endTime: number, userID: string) {
-		let res = await fetch(`${this.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
+	/**
+	 * Legacy API call to submit a sponsor segment, the segment's category will always be "sponsor"
+	 * @param videoID
+	 * @param startTime
+	 * @param endTime
+	 * @deprecated This method is deprecated and should not be used.
+	 */
+	// Is the submitted category "sponsor"? <===========
+	async legacyPostVideoSponsorTimes(videoID: string, startTime: number, endTime: number) {
+		let res = await fetch(`${this.baseURL}/api/postVideoponsorTimes?userID=${this.userID}&videoID=${videoID}`);
 		this.statusCheck(res);
 		return await res.json();
 	}
@@ -243,13 +249,10 @@ export class SponsorBlockVIP extends SponsorBlock {
 
 	// 15 POST /api/shadowBanUser
 	async shadowBanUser(publicUserID: string, enabled: boolean, unHideOldSubmissions: boolean): Promise<void> {
-		let res = await fetch(
-			`${this.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-			}
-		);
+		let res = await fetch(`${this.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		});
 		if (res.status == 400) {
 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
 		} else if (res.status == 403) {
@@ -300,34 +303,4 @@ export class SponsorBlockAdmin extends SponsorBlockVIP {
 
 export type SortType = 'minutesSaved' | 'viewCount' | 'totalSubmissions' | 0 | 1 | 2;
 
-export type PrefixRange =
-	| 3
-	| 4
-	| 5
-	| 6
-	| 7
-	| 8
-	| 9
-	| 10
-	| 11
-	| 12
-	| 13
-	| 14
-	| 15
-	| 16
-	| 17
-	| 18
-	| 19
-	| 20
-	| 21
-	| 22
-	| 23
-	| 24
-	| 25
-	| 26
-	| 27
-	| 28
-	| 29
-	| 30
-	| 31
-	| 32;
+export type PrefixRange = 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32;
