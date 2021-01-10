@@ -9,7 +9,7 @@ import { isUserVIPTest } from './tests/isUserVIPTest';
 test();
 
 async function test(): Promise<void> {
-	const sponsorBlock = SponsorBlock.newUser();
+	const sponsorBlock = new SponsorBlock('test');
 	getSegmentsTest(sponsorBlock);
 
 	// sponsorBlock.postSegment
