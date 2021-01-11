@@ -1,34 +1,36 @@
 import fetch, { Response } from 'node-fetch';
-import config from './config.json';
 import crypto from 'crypto';
-import { v4 as uuidv4 } from 'uuid';
 import { Segment, DBSegment, Category, dbsegmentToSegment, segmentsToDBSegments } from './types/segment.model';
 import { Vote, CategoryVote } from './types/vote.model';
 import { DBVideo, dbvideoToVideo, Video } from './types/video.model';
-import { dbuserStatToUserStats, OverallStats, UserStat } from './types/stats.model';
+import { dbuserStatToUserStats, OverallStats, UserStat, SortType } from './types/stats.model';
+import fs from 'fs';
 
-// interface SponsorBlockInterface {
-// 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
-// 	submitSegment(segment: Segment): Promise<void>;
-// }
+const config = {
+	hashPrefixRecommendation: 4, // Recommended prefix length to use for getting segments privately, to balance between privacy and getting less results
+	baseURL: 'https://sponsor.ajay.app', // Base URL for the api endpoints
+};
 
 /**
- * SponsorBlock API class, to be constructed with a userID.
- * Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}
+ * @summary SponsorBlock API class, to be constructed with a userID.
+ *
+ * @description Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}.
+ * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
+ * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
 export default class SponsorBlock {
 	constructor(public userID: string, baseURL?: string) {
 		this.baseURL = baseURL || config.baseURL;
 	}
 
-	static newUser(): SponsorBlock {
-		let newUserID = uuidv4();
-		console.info(
-			'\x1b[36m%s\x1b[0m',
-			`Make sure to save your userID for use in API requests to keep track of stats: ${newUserID}\nYou can access your userID using sponsorBlock.userID`
-		);
-		return new SponsorBlock(newUserID);
-	}
+	// static newUser(): SponsorBlock {
+	// 	let newUserID = uuidv4();
+	// 	console.info(
+	// 		'\x1b[36m%s\x1b[0m',
+	// 		`Make sure to save your userID for use in API requests to keep track of stats: ${newUserID}\nYou can access your userID using sponsorBlock.userID`
+	// 	);
+	// 	return new SponsorBlock(newUserID);
+	// }
 
 	baseURL: string;
 
@@ -83,7 +85,11 @@ export default class SponsorBlock {
 		}
 		let res = await fetch(`${this.baseURL}/api/skipSegments/${hashPrefix}${query}`);
 		this.statusCheck(res);
-		return dbvideoToVideo(((await res.json()) as DBVideo[]).find((video) => video.videoID === videoID) as DBVideo);
+		let filtered = ((await res.json()) as DBVideo[]).find((video) => video.videoID === videoID);
+		if (!filtered) {
+			throw new Error('Not found');
+		}
+		return dbvideoToVideo(filtered);
 	}
 
 	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
@@ -301,6 +307,16 @@ export class SponsorBlockAdmin extends SponsorBlockVIP {
 	}
 }
 
-export type SortType = 'minutesSaved' | 'viewCount' | 'totalSubmissions' | 0 | 1 | 2;
+/**
+ * Extracts the video ID from the full URL.
+ * this function assumes the input is surely a YouTube video URL, otherwise may return null or a part of the input.
+ * @param youtubeURL The complete YouTube URL of a video.
+ * @returns The video ID extracted from the input URL.
+ */
+export function extractVideoID(youtubeURL: string): string | null {
+	let regex = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+	let matchArray = youtubeURL.match(regex);
+	return matchArray && matchArray[2];
+}
 
-export type PrefixRange = 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32;
+type PrefixRange = 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32;
