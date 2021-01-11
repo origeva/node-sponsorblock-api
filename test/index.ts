@@ -1,4 +1,4 @@
-import SponsorBlock, { SponsorBlockVIP, SortType } from '../src/index';
+import SponsorBlock, { SponsorBlockVIP, extractVideoID } from '../src/index';
 // Tests
 import { getSegmentsTest } from './tests/getSegmentsTest';
 import { isUserVIPTest } from './tests/isUserVIPTest';
@@ -10,10 +10,5 @@ test();
 
 async function test(): Promise<void> {
 	const sponsorBlock = new SponsorBlock('test');
-	getSegmentsTest(sponsorBlock);
-
-	// sponsorBlock.postSegment
-	// sponsorBlock.postSegments
-
-	isUserVIPTest(sponsorBlock);
+	[getSegmentsTest, isUserVIPTest].forEach((fun) => fun(sponsorBlock));
 }
