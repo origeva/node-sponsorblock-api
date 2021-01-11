@@ -10,9 +10,9 @@ on:
     branches: [ master ]
 
 jobs:
-  name: Run Tests
   build:
 
+    name: Run Tests
     runs-on: ubuntu-latest
 
     strategy:
