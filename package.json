@@ -14,14 +14,15 @@
 	},
 	"scripts": {
 		"dev": "nodemon",
-		"test": "ts-node test",
-		"build": "npm test && echo \u001b[92mTest passed\u001b[0m & rd /s /q lib & echo Building... & tsc",
+		"test": "mocha -r ts-node/register tests/**/*.ts",
+		"build": "npm test && rd /s /q lib & echo Building... & tsc",
 		"build:force": "tsc",
 		"clean": "rd /s /q lib",
-		"prepare": "npm test && echo \u001b[92mTest passed\u001b[0m & rd /s /q lib & echo Building... & tsc"
+		"prepare": "npm test && rd /s /q lib & echo Building... & tsc"
 	},
 	"keywords": [
 		"sponsorblock-api",
+		"sponsorblock",
 		"youtube",
 		"sponsor",
 		"api"
@@ -29,7 +30,11 @@
 	"author": "Ori Geva",
 	"license": "ISC",
 	"devDependencies": {
+		"@types/chai": "^4.2.14",
+		"@types/mocha": "^8.2.0",
 		"@types/node-fetch": "^2.5.7",
+		"chai": "^4.2.0",
+		"mocha": "^8.2.1",
 		"nodemon": "^2.0.6",
 		"ts-node": "^9.1.1",
 		"typescript": "^4.1.3"
