@@ -8,31 +8,36 @@ import fs from 'fs';
 
 const config = {
 	hashPrefixRecommendation: 4, // Recommended prefix length to use for getting segments privately, to balance between privacy and getting less results
-	baseURL: 'https://sponsor.ajay.app', // Base URL for the api endpoints
+	baseURL: process.argv[2] === 'local' ? 'https://localhost' : 'https://sponsor.ajay.app', // Base URL for the api endpoints
 };
 
+interface SponsorBlockOptions {
+	/**
+	 * The base URL to send requests to.
+	 * @default https://sponsor.ajay.app
+	 */
+	baseURL?: string;
+
+	/**
+	 * The length of the prefix of the hash to query the server with, the shorter the more private.
+	 * Accepts 3-32
+	 * @default 4
+	 */
+	hashPrefixLength?: PrefixRange;
+}
+
 /**
- * @summary SponsorBlock API class, to be constructed with a userID.
+ * SponsorBlock API class, to be constructed with a userID.
  *
  * @description Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}.
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
 export default class SponsorBlock {
-	constructor(public userID: string, baseURL?: string) {
-		this.baseURL = baseURL || config.baseURL;
+	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
+		options.baseURL = options.baseURL ?? 'https://sponsor.ajay.app';
+		options.hashPrefixLength = options.hashPrefixLength ?? 4;
 	}
-
-	// static newUser(): SponsorBlock {
-	// 	let newUserID = uuidv4();
-	// 	console.info(
-	// 		'\x1b[36m%s\x1b[0m',
-	// 		`Make sure to save your userID for use in API requests to keep track of stats: ${newUserID}\nYou can access your userID using sponsorBlock.userID`
-	// 	);
-	// 	return new SponsorBlock(newUserID);
-	// }
-
-	baseURL: string;
 
 	/**
 	 *
@@ -45,7 +50,7 @@ export default class SponsorBlock {
 		if (categories.length > 0) {
 			query += `&categories=${JSON.stringify(categories)}`;
 		}
-		let res = await fetch(`${this.baseURL}/api/skipSegments${query}`);
+		let res = await fetch(`${this.options.baseURL}/api/skipSegments${query}`);
 		this.statusCheck(res);
 
 		return (await res.json()).map(dbsegmentToSegment);
@@ -54,7 +59,7 @@ export default class SponsorBlock {
 	// 2 A POST /api/skipSegments
 	async postSegment(videoID: string, segment: Segment): Promise<void> {
 		let res = await fetch(
-			`${this.baseURL}/api/skipSegments?videoID=${videoID}&startTime=${segment.startTime}&endTime=${segment.endTime}&category=${segment.category}&userID=${this.userID}`,
+			`${this.options.baseURL}/api/skipSegments?videoID=${videoID}&startTime=${segment.startTime}&endTime=${segment.endTime}&category=${segment.category}&userID=${this.userID}`,
 			{
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -67,7 +72,7 @@ export default class SponsorBlock {
 	// 2 B POST /api/skipSegments
 	async postSegments(videoID: string, ...segments: Segment[]): Promise<void> {
 		segments.map(segmentsToDBSegments).forEach((segment) => (segment.UUID = undefined));
-		let res = await fetch(`${this.baseURL}/api/skipSegments`, {
+		let res = await fetch(`${this.options.baseURL}/api/skipSegments`, {
 			method: 'POST',
 			body: JSON.stringify({ videoID, userID: this.userID, segments }),
 			headers: { 'Content-Type': 'application/json' },
@@ -77,13 +82,13 @@ export default class SponsorBlock {
 	}
 
 	// 3 GET /api/skipSegments/:sha256HashPrefix
-	async getSegmentsPrivately(videoID: string, prefixLength: PrefixRange = config.hashPrefixRecommendation as PrefixRange, ...categories: Category[]): Promise<Video> {
-		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, prefixLength);
+	async getSegmentsPrivately(videoID: string, ...categories: Category[]): Promise<Video> {
+		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
 		let query = '';
 		if (categories.length > 0) {
 			query += `?categories=${JSON.stringify(categories)}`;
 		}
-		let res = await fetch(`${this.baseURL}/api/skipSegments/${hashPrefix}${query}`);
+		let res = await fetch(`${this.options.baseURL}/api/skipSegments/${hashPrefix}${query}`);
 		this.statusCheck(res);
 		let filtered = ((await res.json()) as DBVideo[]).find((video) => video.videoID === videoID);
 		if (!filtered) {
@@ -96,7 +101,7 @@ export default class SponsorBlock {
 	async postNormalVote(vote: Vote): Promise<void> {
 		vote.type = vote.type === 'down' ? 0 : vote.type === 'up' ? 1 : vote.type;
 		let query = `?UUID=${vote.UUID}&userID=${this.userID}&type=${vote.type}`;
-		let res = await fetch(`${this.baseURL}/api/voteOnSponsorTime${query}`);
+		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
 		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
@@ -104,14 +109,14 @@ export default class SponsorBlock {
 	// 4 B POST or GET (legacy) /api/voteOnSponsorTime
 	async postCategoryVote(vote: CategoryVote): Promise<void> {
 		let query = `?UUID=${vote.UUID}&userID=${this.userID}&category=${vote.category}`;
-		let res = await fetch(`${this.baseURL}/api/voteOnSponsorTime${query}`);
+		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
 		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 5 POST or GET (legacy) /api/viewedVideoSponsorTime
-	async viewdVideoSponsorTime(segment: Segment): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/viewedVideoSponsorTime?UUID=${segment.UUID}`, {
+	async postView(segment: Segment): Promise<void> {
+		let res = await fetch(`${this.options.baseURL}/api/viewedVideoSponsorTime?UUID=${segment.UUID}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 		});
@@ -121,7 +126,7 @@ export default class SponsorBlock {
 
 	// 6 GET /api/getViewsForUser
 	async getViews(): Promise<number> {
-		let res = await fetch(`${this.baseURL}/api/getViewsForUser?userID=${this.userID}`);
+		let res = await fetch(`${this.options.baseURL}/api/getViewsForUser?userID=${this.userID}`);
 		this.statusCheck(res);
 		let data = await res.json();
 		return data.viewCount;
@@ -129,7 +134,7 @@ export default class SponsorBlock {
 
 	// 7 GET /api/getSavedTimeForUser
 	async getSavedTime(): Promise<number> {
-		let res = await fetch(`${this.baseURL}/api/getSavedTimeForUser?userID=${this.userID}`);
+		let res = await fetch(`${this.options.baseURL}/api/getSavedTimeForUser?userID=${this.userID}`);
 		this.statusCheck(res);
 		let data = await res.json();
 		return data.timeSaved;
@@ -137,7 +142,7 @@ export default class SponsorBlock {
 
 	// 8 POST /api/setUsername
 	async setUsername(username: string): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/setUsername?userID=${this.userID}&username=${username}`, {
+		let res = await fetch(`${this.options.baseURL}/api/setUsername?userID=${this.userID}&username=${username}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 		});
@@ -147,7 +152,7 @@ export default class SponsorBlock {
 
 	// 9 GET /api/getUsername
 	async getUsername(): Promise<string> {
-		let res = await fetch(`${this.baseURL}/api/getUsername?userID=${this.userID}`);
+		let res = await fetch(`${this.options.baseURL}/api/getUsername?userID=${this.userID}`);
 		this.statusCheck(res);
 		let data = await res.json();
 		return data.userName;
@@ -158,21 +163,21 @@ export default class SponsorBlock {
 	// 10 GET /api/getTopUsers
 	async getTopUsers(sortType: SortType): Promise<UserStat[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
-		let res = await fetch(`${this.baseURL}/api/getTopUsers?sortType=${sortType}`);
+		let res = await fetch(`${this.options.baseURL}/api/getTopUsers?sortType=${sortType}`);
 		this.statusCheck(res);
 		return dbuserStatToUserStats(await res.json());
 	}
 
 	// 11 GET /api/getTotalStats
 	async getTotalStats(): Promise<OverallStats> {
-		let res = await fetch(`${this.baseURL}/api/getTotalStats`);
+		let res = await fetch(`${this.options.baseURL}/api/getTotalStats`);
 		this.statusCheck(res);
 		return await res.json();
 	}
 
 	// 12 GET /api/getDaysSavedFormatted
 	async getDaysSavedFormatted(): Promise<number> {
-		let res = await fetch(`${this.baseURL}/api/getDaysSavedFormatted`);
+		let res = await fetch(`${this.options.baseURL}/api/getDaysSavedFormatted`);
 		this.statusCheck(res);
 		let data = await res.json();
 		return data.daysSaved;
@@ -180,7 +185,7 @@ export default class SponsorBlock {
 
 	// 13 GET /api/isUserVIP
 	async isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }> {
-		let res = await fetch(`${this.baseURL}/api/isUserVIP?userID=${this.userID}`);
+		let res = await fetch(`${this.options.baseURL}/api/isUserVIP?userID=${this.userID}`);
 		this.statusCheck(res);
 		return await res.json();
 	}
@@ -192,7 +197,7 @@ export default class SponsorBlock {
 	 * @deprecated This method is deprecated and should not be used.
 	 */
 	async legacyGetVideoSponsorTimes(videoID: string): Promise<{ sponsorTimes: number[]; UUIDs: string[] }> {
-		let res = await fetch(`${this.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
+		let res = await fetch(`${this.options.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
 		this.statusCheck(res);
 		return await res.json();
 	}
@@ -204,9 +209,8 @@ export default class SponsorBlock {
 	 * @param endTime
 	 * @deprecated This method is deprecated and should not be used.
 	 */
-	// Is the submitted category "sponsor"? <===========
 	async legacyPostVideoSponsorTimes(videoID: string, startTime: number, endTime: number) {
-		let res = await fetch(`${this.baseURL}/api/postVideoponsorTimes?userID=${this.userID}&videoID=${videoID}`);
+		let res = await fetch(`${this.options.baseURL}/api/postVideoponsorTimes?userID=${this.userID}&videoID=${videoID}`);
 		this.statusCheck(res);
 		return await res.json();
 	}
@@ -230,81 +234,135 @@ export default class SponsorBlock {
 	}
 }
 
-export class SponsorBlockVIP extends SponsorBlock {
-	constructor(public userID: string, baseURL?: string) {
-		super(userID, baseURL);
-		this.isUserVIP().then((res) => res.vip || console.log('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
-	}
-	// VIP Calls
-	// 14 POST /api/noSegments
-	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/noSegments`, {
-			method: 'POST',
-			body: JSON.stringify({ videoID: video.videoID, userID: this.userID, categories }),
-			headers: { 'Content-Type': 'application/json' },
-		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Unauthorized (You are not a VIP)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
-		// returns nothing (status code 200)
-	}
+// export class SponsorBlockVIP extends SponsorBlock {
+// 	constructor(public userID: string, baseURL?: string) {
+// 		super(userID, options.baseURL);
+// 		this.isUserVIP().then((res) => res.vip || console.log('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
+// 	}
+// 	// VIP Calls
+// 	// 14 POST /api/noSegments
+// 	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
+// 		let res = await fetch(`${this.options.baseURL}/api/noSegments`, {
+// 			method: 'POST',
+// 			body: JSON.stringify({ videoID: video.videoID, userID: this.userID, categories }),
+// 			headers: { 'Content-Type': 'application/json' },
+// 		});
+// 		if (res.status == 400) {
+// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+// 		} else if (res.status == 403) {
+// 			throw new Error('Unauthorized (You are not a VIP)');
+// 		} else if (res.status != 200) {
+// 			throw new Error(`Status code not 200 (${res.status})`);
+// 		}
+// 		// returns nothing (status code 200)
+// 	}
 
-	// 15 POST /api/shadowBanUser
-	async shadowBanUser(publicUserID: string, enabled: boolean, unHideOldSubmissions: boolean): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Unauthorized (You are not a VIP)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
-		// returns nothing (status code 200)
-	}
+// 	// 15 POST /api/shadowBanUser
+// 	async shadowBanUser(publicUserID: string, enabled: boolean, unHideOldSubmissions: boolean): Promise<void> {
+// 		let res = await fetch(`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`, {
+// 			method: 'POST',
+// 			headers: { 'Content-Type': 'application/json' },
+// 		});
+// 		if (res.status == 400) {
+// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+// 		} else if (res.status == 403) {
+// 			throw new Error('Unauthorized (You are not a VIP)');
+// 		} else if (res.status != 200) {
+// 			throw new Error(`Status code not 200 (${res.status})`);
+// 		}
+// 		// returns nothing (status code 200)
+// 	}
 
-	// 16 POST /api/warnUser
-	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/warnUser`, {
-			method: 'POST',
-			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
-			headers: { 'Content-Type': 'application/json' },
-		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Unauthorized (You are not a VIP)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
-		// returns nothing (status code 200)
-	}
-}
+// 	// 16 POST /api/warnUser
+// 	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
+// 		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
+// 			method: 'POST',
+// 			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
+// 			headers: { 'Content-Type': 'application/json' },
+// 		});
+// 		if (res.status == 400) {
+// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+// 		} else if (res.status == 403) {
+// 			throw new Error('Unauthorized (You are not a VIP)');
+// 		} else if (res.status != 200) {
+// 			throw new Error(`Status code not 200 (${res.status})`);
+// 		}
+// 		// returns nothing (status code 200)
+// 	}
+// }
 
-export class SponsorBlockAdmin extends SponsorBlockVIP {
-	// Admin Calls
-	// 17 POST /api/addUserAsVIP
-	async addVIP(publicUserID: string, enabled?: boolean): Promise<void> {
-		let res = await fetch(`${this.baseURL}/api/warnUser`, {
-			method: 'POST',
-			body: JSON.stringify({ adminUserID: this.userID, userID: publicUserID, enabled }),
-			headers: { 'Content-Type': 'application/json' },
-		});
-		if (res.status == 400) {
-			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new Error('Unauthorized (You are not an admin)');
-		} else if (res.status != 200) {
-			throw new Error(`Status code not 200 (${res.status})`);
-		}
-		// returns nothing (status code 200)
-	}
+// export class SponsorBlockAdmin extends SponsorBlockVIP {
+// 	// Admin Calls
+// 	// 17 POST /api/addUserAsVIP
+// 	async addVIP(publicUserID: string, enabled?: boolean): Promise<void> {
+// 		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
+// 			method: 'POST',
+// 			body: JSON.stringify({ adminUserID: this.userID, userID: publicUserID, enabled }),
+// 			headers: { 'Content-Type': 'application/json' },
+// 		});
+// 		if (res.status == 400) {
+// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+// 		} else if (res.status == 403) {
+// 			throw new Error('Unauthorized (You are not an admin)');
+// 		} else if (res.status != 200) {
+// 			throw new Error(`Status code not 200 (${res.status})`);
+// 		}
+// 		// returns nothing (status code 200)
+// 	}
+// }
+
+interface API {
+	/**
+	 *
+	 * @param videoID The ID of the video to get segments for.
+	 * @param categories The categories of the segments. Defaults to "sponsor".
+	 */
+	// 1 GET /api/skipSegments
+	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
+
+	// 2 A POST /api/skipSegments
+	postSegment(videoID: string, segment: Segment): Promise<void>;
+
+	// 2 B POST /api/skipSegments
+	postSegments(videoID: string, ...segments: Segment[]): Promise<void>;
+
+	// 3 GET /api/skipSegments/:sha256HashPrefix
+	getSegmentsPrivately(videoID: string, ...categories: Category[]): Promise<Video>;
+
+	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
+	postNormalVote(vote: Vote): Promise<void>;
+
+	// 4 B POST or GET (legacy) /api/voteOnSponsorTime
+	postCategoryVote(vote: CategoryVote): Promise<void>;
+
+	// 5 POST or GET (legacy) /api/viewedVideoSponsorTime
+	postView(segment: Segment): Promise<void>;
+
+	// 6 GET /api/getViewsForUser
+	getViews(): Promise<number>;
+
+	// 7 GET /api/getSavedTimeForUser
+	getSavedTime(): Promise<number>;
+
+	// 8 POST /api/setUsername
+	setUsername(username: string): Promise<void>;
+
+	// 9 GET /api/getUsername
+	getUsername(): Promise<string>;
+
+	// Stat Calls
+
+	// 10 GET /api/getTopUsers
+	getTopUsers(sortType: SortType): Promise<UserStat[]>;
+
+	// 11 GET /api/getTotalStats
+	getTotalStats(): Promise<OverallStats>;
+
+	// 12 GET /api/getDaysSavedFormatted
+	getDaysSavedFormatted(): Promise<number>;
+
+	// 13 GET /api/isUserVIP
+	isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }>;
 }
 
 /**
