@@ -71,10 +71,12 @@ export default class SponsorBlock {
 
 	// 2 B POST /api/skipSegments
 	async postSegments(videoID: string, ...segments: Segment[]): Promise<void> {
-		segments.map(segmentsToDBSegments).forEach((segment) => (segment.UUID = undefined));
+		let dbSegments = segments.map(segmentsToDBSegments);
+		dbSegments.forEach((segment) => (segment.UUID = undefined));
+		console.log({ videoID, userID: this.userID, segments: dbSegments });
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments`, {
 			method: 'POST',
-			body: JSON.stringify({ videoID, userID: this.userID, segments }),
+			body: JSON.stringify({ videoID, userID: this.userID, segments: dbSegments }),
 			headers: { 'Content-Type': 'application/json' },
 		});
 		this.statusCheck(res);
@@ -176,11 +178,11 @@ export default class SponsorBlock {
 	}
 
 	// 12 GET /api/getDaysSavedFormatted
-	async getDaysSavedFormatted(): Promise<number> {
+	async getDaysSaved(): Promise<number> {
 		let res = await fetch(`${this.options.baseURL}/api/getDaysSavedFormatted`);
 		this.statusCheck(res);
 		let data = await res.json();
-		return data.daysSaved;
+		return parseFloat(data.daysSaved);
 	}
 
 	// 13 GET /api/isUserVIP
@@ -317,26 +319,17 @@ interface API {
 	 * @param videoID The ID of the video to get segments for.
 	 * @param categories The categories of the segments. Defaults to "sponsor".
 	 */
-	// 1 GET /api/skipSegments
 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
 
-	// 2 A POST /api/skipSegments
-	postSegment(videoID: string, segment: Segment): Promise<void>;
-
-	// 2 B POST /api/skipSegments
 	postSegments(videoID: string, ...segments: Segment[]): Promise<void>;
 
-	// 3 GET /api/skipSegments/:sha256HashPrefix
 	getSegmentsPrivately(videoID: string, ...categories: Category[]): Promise<Video>;
 
-	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
-	postNormalVote(vote: Vote): Promise<void>;
+	vote(UUID: string, type: 'down' | 'up' | 0 | 1): Promise<void>;
 
-	// 4 B POST or GET (legacy) /api/voteOnSponsorTime
-	postCategoryVote(vote: CategoryVote): Promise<void>;
+	voteCategory(UUID: string, category: Category): Promise<void>;
 
-	// 5 POST or GET (legacy) /api/viewedVideoSponsorTime
-	postView(segment: Segment): Promise<void>;
+	viewed(UUID: string): Promise<void>; // UUID or segment?
 
 	// 6 GET /api/getViewsForUser
 	getViews(): Promise<number>;
@@ -344,22 +337,19 @@ interface API {
 	// 7 GET /api/getSavedTimeForUser
 	getSavedTime(): Promise<number>;
 
-	// 8 POST /api/setUsername
 	setUsername(username: string): Promise<void>;
 
-	// 9 GET /api/getUsername
 	getUsername(): Promise<string>;
 
 	// Stat Calls
 
-	// 10 GET /api/getTopUsers
 	getTopUsers(sortType: SortType): Promise<UserStat[]>;
 
 	// 11 GET /api/getTotalStats
-	getTotalStats(): Promise<OverallStats>;
+	getOverallStats(): Promise<OverallStats>;
 
 	// 12 GET /api/getDaysSavedFormatted
-	getDaysSavedFormatted(): Promise<number>;
+	getDaysSaved(): Promise<number>;
 
 	// 13 GET /api/isUserVIP
 	isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }>;
