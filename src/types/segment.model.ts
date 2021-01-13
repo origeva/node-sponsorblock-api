@@ -1,20 +1,34 @@
-export type Segment = { UUID?: string; startTime: number; endTime: number; category: Category };
-export type DBSegment = { UUID?: string; segment: [number, number]; category: Category };
+/**
+ * SponsorBlock segment with times where the content is deemed as one of the categories that you might want to skip.
+ */
+export type Segment = {
+	/**
+	 * The ID of the Segment in the database, should not be assigned locally.
+	 */
+	UUID?: string;
+
+	/**
+	 * The start time of the segment
+	 */
+	startTime: number;
+
+	/**
+	 * The end time of the segment
+	 */
+	endTime: number;
+
+	category: Category;
+};
+
+// export type DBSegment = { UUID?: string; segment: [number, number]; category: Category };
 
 export function isSegment(object: any): object is Segment {
 	return object.UUID && object.startTime && object.endTime && object.category;
 }
 
-export function dbsegmentToSegment(dbsegment: DBSegment): Segment {
-	let { UUID, segment, category } = dbsegment;
-	return { UUID, startTime: segment[0], endTime: segment[1], category };
-}
-
-export function segmentsToDBSegments(segment: Segment): DBSegment {
-	let { UUID, startTime, endTime, category } = segment;
-	return { UUID, segment: [startTime, endTime], category };
-}
-
+/**
+ * The category of a segment
+ */
 export type Category = 'sponsor' | 'intro' | 'outro' | 'interaction' | 'selfpromo' | 'music_offtopic';
 
 // export default class Segment {
