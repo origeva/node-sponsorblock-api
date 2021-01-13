@@ -1,6 +1,6 @@
 import fetch, { Response } from 'node-fetch';
 import crypto from 'crypto';
-import { Segment, DBSegment, Category, dbsegmentToSegment, segmentsToDBSegments } from './types/segment.model';
+import { Segment, Category } from './types/segment.model';
 import { Vote, CategoryVote } from './types/vote.model';
 import { DBVideo, dbvideoToVideo, Video } from './types/video.model';
 import { dbuserStatToUserStats, OverallStats, UserStat, SortType } from './types/stats.model';
@@ -11,7 +11,7 @@ const config = {
 	baseURL: process.argv[2] === 'local' ? 'https://localhost' : 'https://sponsor.ajay.app', // Base URL for the api endpoints
 };
 
-interface SponsorBlockOptions {
+type SponsorBlockOptions = {
 	/**
 	 * The base URL to send requests to.
 	 * @default https://sponsor.ajay.app
@@ -24,7 +24,7 @@ interface SponsorBlockOptions {
 	 * @default 4
 	 */
 	hashPrefixLength?: PrefixRange;
-}
+};
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -53,27 +53,32 @@ export default class SponsorBlock {
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments${query}`);
 		this.statusCheck(res);
 
-		return (await res.json()).map(dbsegmentToSegment);
+		await res.json();
+		return ((await res.json()) as { UUID: string; segment: [number, number]; category: Category }[]).map(({ UUID, segment, category }) => {
+			return { UUID, startTime: segment[0], endTime: segment[1], category };
+		});
 	}
 
-	// 2 A POST /api/skipSegments
-	async postSegment(videoID: string, segment: Segment): Promise<void> {
-		let res = await fetch(
-			`${this.options.baseURL}/api/skipSegments?videoID=${videoID}&startTime=${segment.startTime}&endTime=${segment.endTime}&category=${segment.category}&userID=${this.userID}`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-			}
-		);
-		this.statusCheck(res);
-		// returns nothing (status code 200)
-	}
+	// // 2 A POST /api/skipSegments
+	// async postSegment(videoID: string, segment: Segment): Promise<void> {
+	// 	let res = await fetch(
+	// 		`${this.options.baseURL}/api/skipSegments?videoID=${videoID}&startTime=${segment.startTime}&endTime=${segment.endTime}&category=${segment.category}&userID=${this.userID}`,
+	// 		{
+	// 			method: 'POST',
+	// 			headers: { 'Content-Type': 'application/json' },
+	// 		}
+	// 	);
+	// 	this.statusCheck(res);
+	// 	// returns nothing (status code 200)
+	// }
 
 	// 2 B POST /api/skipSegments
 	async postSegments(videoID: string, ...segments: Segment[]): Promise<void> {
-		let dbSegments = segments.map(segmentsToDBSegments);
+		let dbSegments = segments.map((segment: Segment) => {
+			let { UUID, startTime, endTime, category } = segment;
+			return { UUID, segment: [startTime, endTime], category };
+		});
 		dbSegments.forEach((segment) => (segment.UUID = undefined));
-		console.log({ videoID, userID: this.userID, segments: dbSegments });
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments`, {
 			method: 'POST',
 			body: JSON.stringify({ videoID, userID: this.userID, segments: dbSegments }),
@@ -315,44 +320,96 @@ export default class SponsorBlock {
 
 interface API {
 	/**
-	 *
 	 * @param videoID The ID of the video to get segments for.
 	 * @param categories The categories of the segments. Defaults to "sponsor".
 	 */
 	getSegments(videoID: string, ...categories: Category[]): Promise<Segment[]>;
 
+	/**
+	 * @param videoID The ID of the video to submit segments for.
+	 * @param segments The segments to submit.
+	 */
 	postSegments(videoID: string, ...segments: Segment[]): Promise<void>;
 
+	/**
+	 * Hashes the ID of the video and send the prefix of the hash so the server doesn't know which video you're looking for.
+	 * The method filters out the video that don't match the input videoID.
+	 * @param videoID The ID of the video to get segments for.
+	 * @param categories The categories of the segments. Defaults to "sponsor".
+	 */
 	getSegmentsPrivately(videoID: string, ...categories: Category[]): Promise<Video>;
 
+	/**
+	 * Vote a submission up or down.
+	 * @param UUID The UUID of the segment you're voting for.
+	 * @param type The vote type, 'down', 'up' or 0 for down, 1 for up.
+	 */
 	vote(UUID: string, type: 'down' | 'up' | 0 | 1): Promise<void>;
 
+	/**
+	 * Vote a submission for a more fitting category change.
+	 * @param UUID The UUID of the segment you're voting for.
+	 * @param category The category you think would be more fitting.
+	 */
 	voteCategory(UUID: string, category: Category): Promise<void>;
 
+	/**
+	 * Submitting a view for a segment, let it be known you've made use of a submission.
+	 * To be used only after using a segment.
+	 * @param UUID The UUID of the segment you've viewed.
+	 */
 	viewed(UUID: string): Promise<void>; // UUID or segment?
 
+	/**
+	 * Check how many times your submissions have been viewed.
+	 */
 	// 6 GET /api/getViewsForUser
 	getViews(): Promise<number>;
 
+	/**
+	 * Check how much time you saved for other.
+	 */
 	// 7 GET /api/getSavedTimeForUser
-	getSavedTime(): Promise<number>;
+	getTimeSaved(): Promise<number>;
 
+	/**
+	 * Set a different username.
+	 * @param username The username you'd like to change to.
+	 */
 	setUsername(username: string): Promise<void>;
 
+	/**
+	 * Get your username.
+	 */
 	getUsername(): Promise<string>;
 
 	// Stat Calls
 
+	/**
+	 * Get the top user stats
+	 * @param sortType
+	 */
 	getTopUsers(sortType: SortType): Promise<UserStat[]>;
 
 	// 11 GET /api/getTotalStats
 	getOverallStats(): Promise<OverallStats>;
 
+	/**
+	 * Get how many days the platform has saved for users.
+	 */
 	// 12 GET /api/getDaysSavedFormatted
 	getDaysSaved(): Promise<number>;
 
+	/**
+	 * Check whether you're a VIP.
+	 */
 	// 13 GET /api/isUserVIP
-	isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }>;
+	isVIP(): Promise<boolean>;
+
+	/**
+	 * Get the hash of your local ID (as stored in the server's database).
+	 */
+	getHashedUserID(): string;
 }
 
 /**
