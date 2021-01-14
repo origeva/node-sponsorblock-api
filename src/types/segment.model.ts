@@ -8,19 +8,20 @@ export type Segment = {
 	UUID?: string;
 
 	/**
-	 * The start time of the segment
+	 * The start time of the segment.
 	 */
 	startTime: number;
 
 	/**
-	 * The end time of the segment
+	 * The end time of the segment.
 	 */
 	endTime: number;
 
+	/**
+	 * The category of the segment.
+	 */
 	category: Category;
 };
-
-// export type DBSegment = { UUID?: string; segment: [number, number]; category: Category };
 
 export function isSegment(object: any): object is Segment {
 	return object.UUID && object.startTime && object.endTime && object.category;
@@ -30,17 +31,3 @@ export function isSegment(object: any): object is Segment {
  * The category of a segment
  */
 export type Category = 'sponsor' | 'intro' | 'outro' | 'interaction' | 'selfpromo' | 'music_offtopic';
-
-// export default class Segment {
-// 	constructor(public segment: [number, number], public category: Category, public UUID?: string | undefined) {}
-// }
-
-// export default interface Segment {
-// 	UUID: string;
-// 	segment: number[];
-// 	category: Category;
-// }
-
-// export class PostSegment {
-// 	constructor(public segment: number[], public category: string) {}
-// }
