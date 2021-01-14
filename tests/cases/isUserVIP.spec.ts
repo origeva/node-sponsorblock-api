@@ -4,13 +4,13 @@ import { config } from '../config';
 
 const { sponsorBlock } = config;
 
-describe('isUserVIP', () => {
+describe('isVIP', () => {
 	it('should not return undefined', async () => {
 		let response = await sponsorBlock.isVIP();
-		assert.notStrictEqual(response, undefined, 'isUserVIP(): vip is undefined');
+		assert.notStrictEqual(response, undefined, 'isVIP(): vip is undefined');
 	});
 	it('should return false', async () => {
 		let response = await sponsorBlock.isVIP();
-		assert.strictEqual(response, false, 'isUserVIP(): vip is undefined');
+		assert.strictEqual(response, false, 'isVIP(): vip is true');
 	});
 });
