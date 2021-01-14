@@ -4,7 +4,7 @@ const { sponsorBlock } = config;
 
 describe('getSavedTime', () => {
 	it('should return at least 0', async () => {
-		let result = await sponsorBlock.getSavedTime();
+		let result = await sponsorBlock.getTimeSaved();
 		assert.isAtLeast(result, 0);
 	});
 });

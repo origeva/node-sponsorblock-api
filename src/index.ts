@@ -33,7 +33,7 @@ type SponsorBlockOptions = {
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
-export default class SponsorBlock {
+export default class SponsorBlock implements API {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
 		options.baseURL = options.baseURL ?? 'https://sponsor.ajay.app';
 		options.hashPrefixLength = options.hashPrefixLength ?? 4;
@@ -105,25 +105,25 @@ export default class SponsorBlock {
 	}
 
 	// 4 A POST or GET (legacy) /api/voteOnSponsorTime
-	async postNormalVote(vote: Vote): Promise<void> {
-		vote.type = vote.type === 'down' ? 0 : vote.type === 'up' ? 1 : vote.type;
-		let query = `?UUID=${vote.UUID}&userID=${this.userID}&type=${vote.type}`;
+	async vote(UUID: string, type: VoteType): Promise<void> {
+		type = type === 'down' ? 0 : type === 'up' ? 1 : type;
+		let query = `?UUID=${UUID}&userID=${this.userID}&type=${type}`;
 		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
 		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 4 B POST or GET (legacy) /api/voteOnSponsorTime
-	async postCategoryVote(vote: CategoryVote): Promise<void> {
-		let query = `?UUID=${vote.UUID}&userID=${this.userID}&category=${vote.category}`;
+	async voteCategory(UUID: string, category: Category): Promise<void> {
+		let query = `?UUID=${UUID}&userID=${this.userID}&category=${category}`;
 		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
 		this.statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	// 5 POST or GET (legacy) /api/viewedVideoSponsorTime
-	async postView(segment: Segment): Promise<void> {
-		let res = await fetch(`${this.options.baseURL}/api/viewedVideoSponsorTime?UUID=${segment.UUID}`, {
+	async viewed(UUID: string): Promise<void> {
+		let res = await fetch(`${this.options.baseURL}/api/viewedVideoSponsorTime?UUID=${UUID}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 		});
@@ -140,7 +140,7 @@ export default class SponsorBlock {
 	}
 
 	// 7 GET /api/getSavedTimeForUser
-	async getSavedTime(): Promise<number> {
+	async getTimeSaved(): Promise<number> {
 		let res = await fetch(`${this.options.baseURL}/api/getSavedTimeForUser?userID=${this.userID}`);
 		this.statusCheck(res);
 		let data = await res.json();
@@ -176,7 +176,7 @@ export default class SponsorBlock {
 	}
 
 	// 11 GET /api/getTotalStats
-	async getTotalStats(): Promise<OverallStats> {
+	async getOverallStats(): Promise<OverallStats> {
 		let res = await fetch(`${this.options.baseURL}/api/getTotalStats`);
 		this.statusCheck(res);
 		return await res.json();
@@ -191,10 +191,14 @@ export default class SponsorBlock {
 	}
 
 	// 13 GET /api/isUserVIP
-	async isUserVIP(): Promise<{ hashedUserID: string; vip: boolean }> {
+	async isVIP(): Promise<boolean> {
 		let res = await fetch(`${this.options.baseURL}/api/isUserVIP?userID=${this.userID}`);
 		this.statusCheck(res);
 		return await res.json();
+	}
+
+	getHashedUserID(): string {
+		return '';
 	}
 
 	// Legacy Calls
@@ -411,6 +415,8 @@ interface API {
 	 */
 	getHashedUserID(): string;
 }
+
+type VoteType = 'down' | 'up' | 0 | 1;
 
 /**
  * Extracts the video ID from the full URL.
