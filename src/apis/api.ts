@@ -1,8 +1,9 @@
+import fetch, { Response } from 'node-fetch';
 import { Category, Segment } from 'src/types/segment.model';
 import { SponsorBlock, SponsorBlockOptions, VoteType } from '../index';
 import crypto from 'crypto';
+import { dbuserStatToUserStats, OverallStats, SortType, UserStat } from '../types/stats.model';
 import { Video } from 'src/types/video.model';
-import { dbuserStatToUserStats, OverallStats, SortType, UserStat } from 'src/types/stats.model';
 
 export default class SponsorBlockAPI implements SponsorBlock {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
@@ -23,11 +24,11 @@ export default class SponsorBlockAPI implements SponsorBlock {
 		}
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments${query}`);
 		statusCheck(res);
-
-		await res.json();
-		return ((await res.json()) as { UUID: string; segment: [number, number]; category: Category }[]).map(({ UUID, segment, category }) => {
+		let data = (await res.json()) as { UUID: string; segment: [number, number]; category: Category }[];
+		let segments = data.map(({ UUID, segment, category }) => {
 			return { UUID, startTime: segment[0], endTime: segment[1], category };
 		});
+		return segments;
 	}
 
 	// 2 B POST /api/skipSegments
@@ -163,32 +164,8 @@ export default class SponsorBlockAPI implements SponsorBlock {
 	getHashedUserID(): string {
 		return '';
 	}
-
-	// Legacy Calls
-	/**
-	 *
-	 * @param videoID
-	 * @deprecated This method is deprecated and should not be used.
-	 */
-	async legacyGetVideoSponsorTimes(videoID: string): Promise<{ sponsorTimes: number[]; UUIDs: string[] }> {
-		let res = await fetch(`${this.options.baseURL}/api/getVideoponsorTimes?$videoID=${videoID}`);
-		statusCheck(res);
-		return await res.json();
-	}
-
-	/**
-	 * Legacy API call to submit a sponsor segment, the segment's category will always be "sponsor"
-	 * @param videoID
-	 * @param startTime
-	 * @param endTime
-	 * @deprecated This method is deprecated and should not be used.
-	 */
-	async legacyPostVideoSponsorTimes(videoID: string, startTime: number, endTime: number) {
-		let res = await fetch(`${this.options.baseURL}/api/postVideoponsorTimes?userID=${this.userID}&videoID=${videoID}`);
-		statusCheck(res);
-		return await res.json();
-	}
 }
+
 function statusCheck(res: Response) {
 	if (res.status === 400) {
 		throw new Error('Bad Request (Your inputs are wrong/impossible)');
