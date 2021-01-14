@@ -13,6 +13,48 @@ const config: { hashPrefixRecommendation: PrefixRange; baseURL: string } = {
 import SponsorBlockAPI from './apis/api';
 export default SponsorBlockAPI;
 
+export class LegacyAPI {
+	constructor(public userID: string, public baseURL: string = config.baseURL) {}
+
+	// Legacy Calls
+	/**
+	 * Legacy API call to get videos' segments. Only returns segments of 'sponsor' category.
+	 * @param videoID The ID of the video to get segments for.
+	 * @deprecated This method is deprecated and should not be used.
+	 */
+	async getSegments(videoID: string): Promise<Segment[]> {
+		let res = await fetch(`${this.baseURL}/api/getVideoSponsorTimes?videoID=${videoID}`);
+		if (res.status === 404) {
+			throw new Error('Not found');
+		}
+		let data = (await res.json()) as { sponsorTimes: [number, number][]; UUIDs: string[] };
+		let segments: Segment[] = [];
+		for (let i = 0; i < data.UUIDs.length; i++) {
+			segments.push({ UUID: data.UUIDs[i], startTime: data.sponsorTimes[i][0], endTime: data.sponsorTimes[i][1], category: 'sponsor' });
+		}
+		return segments;
+	}
+
+	/**
+	 * Legacy API call to submit a sponsor segment, the segment's category will always be 'sponsor'.
+	 * @param videoID The ID of the video to get segments for.
+	 * @param startTime The start time of the segment.
+	 * @param endTime The end time of the segment.
+	 * @deprecated This method is deprecated and should not be used.
+	 */
+	async postSegment(videoID: string, startTime: number, endTime: number): Promise<void> {
+		let res = await fetch(`${this.baseURL}/api/postVideoponsorTimes?userID=${this.userID}&videoID=${videoID}`);
+		if (res.status === 400) {
+			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status === 409) {
+			throw new Error('Rate Limit (Too many for the same user or IP)');
+		} else if (res.status === 429) {
+			throw new Error('Duplicate');
+		}
+		// returns nothing (status code 200)
+	}
+}
+
 export type SponsorBlockOptions = {
 	/**
 	 * The base URL to send requests to.
