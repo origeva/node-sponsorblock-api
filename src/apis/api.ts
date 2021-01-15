@@ -1,15 +1,18 @@
 import fetch, { Response } from 'node-fetch';
 import { Category, Segment } from 'src/types/segment.model';
-import { SponsorBlock, SponsorBlockOptions, VoteType } from '../index';
+import { SponsorBlockAPI, SponsorBlockOptions, VoteType } from '../index';
 import crypto from 'crypto';
 import { dbuserStatToUserStats, OverallStats, SortType, UserStat } from '../types/stats.model';
 import { Video } from 'src/types/video.model';
+import { config } from '../index';
 
-export default class SponsorBlockAPI implements SponsorBlock {
+export default class SponsorBlock implements SponsorBlockAPI {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		options.baseURL = options.baseURL ?? 'https://sponsor.ajay.app';
-		options.hashPrefixLength = options.hashPrefixLength ?? 4;
+		options.baseURL = options.baseURL ?? config.baseURL;
+		options.hashPrefixLength = options.hashPrefixLength ?? config.hashPrefixRecommendation;
 	}
+
+	private hashedUserID: string;
 
 	/**
 	 * Get the skip segments of the chosen categories for a video.
@@ -162,24 +165,119 @@ export default class SponsorBlockAPI implements SponsorBlock {
 	}
 
 	getHashedUserID(): string {
-		return '';
+		if (this.hashedUserID) return this.hashedUserID;
+		let value = this.userID;
+		for (let i = 0; i < 5000; i++) {
+			value = crypto.createHash('sha256').update(value).digest('hex');
+		}
+		return (this.hashedUserID = value);
+	}
+}
+
+export class SponsorBlockVIP extends SponsorBlock {
+	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
+		super(userID, options);
+		this.isVIP().then((res) => res || console.info('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
+	}
+
+	// VIP Calls
+	// 14 POST /api/noSegments
+	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
+		let res = await fetch(`${this.options.baseURL}/api/noSegments`, {
+			method: 'POST',
+			body: JSON.stringify({ videoID: video.videoID, userID: this.userID, categories }),
+			headers: { 'Content-Type': 'application/json' },
+		});
+		if (res.status == 400) {
+			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status == 403) {
+			throw new Error('Unauthorized (You are not a VIP)');
+		} else if (res.status != 200) {
+			throw new Error(`Status code not 200 (${res.status})`);
+		}
+		// returns nothing (status code 200)
+	}
+
+	// 15 POST /api/shadowBanUser
+	async shadowBanUser(publicUserID: string, enabled: boolean, unHideOldSubmissions: boolean): Promise<void> {
+		let res = await fetch(
+			`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
+		if (res.status == 400) {
+			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status == 403) {
+			throw new Error('Unauthorized (You are not a VIP)');
+		} else if (res.status != 200) {
+			throw new Error(`Status code not 200 (${res.status})`);
+		}
+		// returns nothing (status code 200)
+	}
+
+	// 16 POST /api/warnUser
+	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
+		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
+			method: 'POST',
+			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
+			headers: { 'Content-Type': 'application/json' },
+		});
+		if (res.status == 400) {
+			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status == 403) {
+			throw new Error('Unauthorized (You are not a VIP)');
+		} else if (res.status != 200) {
+			throw new Error(`Status code not 200 (${res.status})`);
+		}
+		// returns nothing (status code 200)
+	}
+}
+
+export class SponsorBlockAdmin extends SponsorBlockVIP {
+	// Admin Calls
+	// 17 POST /api/addUserAsVIP
+	async addVIP(publicUserID: string, enabled?: boolean): Promise<void> {
+		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
+			method: 'POST',
+			body: JSON.stringify({ adminUserID: this.userID, userID: publicUserID, enabled }),
+			headers: { 'Content-Type': 'application/json' },
+		});
+		if (res.status == 400) {
+			throw new Error('Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status == 403) {
+			throw new Error('Unauthorized (You are not an admin)');
+		} else if (res.status != 200) {
+			throw new Error(`Status code not 200 (${res.status})`);
+		}
+		// returns nothing (status code 200)
 	}
 }
 
 function statusCheck(res: Response) {
-	if (res.status === 400) {
-		throw new Error('Bad Request (Your inputs are wrong/impossible)');
-	} else if (res.status == 403) {
-		throw new Error('Rejected by auto moderator (Reason will be sent in the response)');
-	} else if (res.status === 404) {
-		throw new Error('Not Found');
-	} else if (res.status === 405) {
-		throw new Error('Duplicate');
-	} else if (res.status === 409) {
-		throw new Error('Duplicate');
-	} else if (res.status === 429) {
-		throw new Error('Rate Limit (Too many for the same user or IP)');
-	} else if (res.status !== 200) {
-		throw new Error(`Status code not 200 (${res.status})`);
+	if (res.status !== 200) {
+		if (res.status === 400) {
+			throw new ResponseError(400, 'Bad Request (Your inputs are wrong/impossible)');
+		} else if (res.status == 403) {
+			throw new ResponseError(403, 'Rejected by auto moderator (Reason will be sent in the response)');
+		} else if (res.status === 404) {
+			throw new ResponseError(404, 'Not Found');
+		} else if (res.status === 405) {
+			throw new ResponseError(405, 'Duplicate');
+		} else if (res.status === 409) {
+			throw new ResponseError(409, 'Duplicate');
+		} else if (res.status === 429) {
+			throw new ResponseError(429, 'Rate Limit (Too many for the same user or IP)');
+		} else {
+			throw new ResponseError(res.status, `Status code not 200 (${res.status})`);
+		}
+	}
+}
+
+class ResponseError extends Error {
+	constructor(public status: number, message?: string) {
+		super(message);
+		this.name = 'ResponseError';
 	}
 }
