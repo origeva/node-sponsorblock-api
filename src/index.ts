@@ -5,15 +5,15 @@ import { Vote, CategoryVote } from './types/vote.model';
 import { Video } from './types/video.model';
 import { dbuserStatToUserStats, OverallStats, UserStat, SortType } from './types/stats.model';
 
-const config: { hashPrefixRecommendation: PrefixRange; baseURL: string } = {
+export const config: { hashPrefixRecommendation: PrefixRange; baseURL: string } = {
 	baseURL: process.argv[2] === 'local' ? 'https://localhost' : 'https://sponsor.ajay.app', // Base URL for the api endpoints
 	hashPrefixRecommendation: 4, // Recommended prefix length to use for getting segments privately, to balance between privacy and more accurate results
 };
 
-import SponsorBlockAPI from './apis/api';
-export default SponsorBlockAPI;
+import SponsorBlock from './apis/api';
+export default SponsorBlock;
 
-export class LegacyAPI {
+export class SponsorBlockLegacy {
 	constructor(public userID: string, public baseURL: string = config.baseURL) {}
 
 	// Legacy Calls
@@ -70,83 +70,6 @@ export type SponsorBlockOptions = {
 	hashPrefixLength?: PrefixRange;
 };
 
-// export class SponsorBlockVIP extends SponsorBlock {
-// 	constructor(public userID: string, baseURL?: string) {
-// 		super(userID, options.baseURL);
-// 		this.isUserVIP().then((res) => res.vip || console.log('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
-// 	}
-// 	// VIP Calls
-// 	// 14 POST /api/noSegments
-// 	async blockSubmissionsOfCategory(video: Video, ...categories: Category[]): Promise<void> {
-// 		let res = await fetch(`${this.options.baseURL}/api/noSegments`, {
-// 			method: 'POST',
-// 			body: JSON.stringify({ videoID: video.videoID, userID: this.userID, categories }),
-// 			headers: { 'Content-Type': 'application/json' },
-// 		});
-// 		if (res.status == 400) {
-// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-// 		} else if (res.status == 403) {
-// 			throw new Error('Unauthorized (You are not a VIP)');
-// 		} else if (res.status != 200) {
-// 			throw new Error(`Status code not 200 (${res.status})`);
-// 		}
-// 		// returns nothing (status code 200)
-// 	}
-
-// 	// 15 POST /api/shadowBanUser
-// 	async shadowBanUser(publicUserID: string, enabled: boolean, unHideOldSubmissions: boolean): Promise<void> {
-// 		let res = await fetch(`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=${enabled}&unHideOldSubmissions=${unHideOldSubmissions}`, {
-// 			method: 'POST',
-// 			headers: { 'Content-Type': 'application/json' },
-// 		});
-// 		if (res.status == 400) {
-// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-// 		} else if (res.status == 403) {
-// 			throw new Error('Unauthorized (You are not a VIP)');
-// 		} else if (res.status != 200) {
-// 			throw new Error(`Status code not 200 (${res.status})`);
-// 		}
-// 		// returns nothing (status code 200)
-// 	}
-
-// 	// 16 POST /api/warnUser
-// 	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
-// 		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
-// 			method: 'POST',
-// 			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
-// 			headers: { 'Content-Type': 'application/json' },
-// 		});
-// 		if (res.status == 400) {
-// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-// 		} else if (res.status == 403) {
-// 			throw new Error('Unauthorized (You are not a VIP)');
-// 		} else if (res.status != 200) {
-// 			throw new Error(`Status code not 200 (${res.status})`);
-// 		}
-// 		// returns nothing (status code 200)
-// 	}
-// }
-
-// export class SponsorBlockAdmin extends SponsorBlockVIP {
-// 	// Admin Calls
-// 	// 17 POST /api/addUserAsVIP
-// 	async addVIP(publicUserID: string, enabled?: boolean): Promise<void> {
-// 		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
-// 			method: 'POST',
-// 			body: JSON.stringify({ adminUserID: this.userID, userID: publicUserID, enabled }),
-// 			headers: { 'Content-Type': 'application/json' },
-// 		});
-// 		if (res.status == 400) {
-// 			throw new Error('Bad Request (Your inputs are wrong/impossible)');
-// 		} else if (res.status == 403) {
-// 			throw new Error('Unauthorized (You are not an admin)');
-// 		} else if (res.status != 200) {
-// 			throw new Error(`Status code not 200 (${res.status})`);
-// 		}
-// 		// returns nothing (status code 200)
-// 	}
-// }
-
 /**
  * SponsorBlock API class, to be constructed with a userID.
  *
@@ -154,7 +77,7 @@ export type SponsorBlockOptions = {
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
-export interface SponsorBlock {
+export interface SponsorBlockAPI {
 	/**
 	 * The local user ID.
 	 */
@@ -253,8 +176,42 @@ export interface SponsorBlock {
 	getHashedUserID(): string;
 }
 
+interface SponsorBlockAPIVIP extends SponsorBlockAPI {
+	// VIP Calls
+
+	/**
+	 *
+	 * @param video
+	 * @param categories
+	 */
+	// 14 POST /api/noSegments
+	blockSubmissionsOfCategory(videoID: string, ...categories: Category[]): Promise<void>;
+
+	// 15 POST /api/shadowBanUser
+	shadowBan(publicUserID: string): Promise<void>;
+
+	removeShadowBan(publicUserID: string): Promise<void>;
+
+	hideOldSubmissions(publicUserID: string): Promise<void>;
+
+	// 16 POST /api/warnUser
+	warnUser(publicUserID: string, enabled?: boolean): Promise<void>;
+}
+
+interface SponsorBlockAPIAdmin extends SponsorBlockAPIVIP {
+	// Admin Calls
+	// 17 POST /api/addUserAsVIP
+	addVIP(publicUserID: string, enabled?: boolean): Promise<void>;
+}
+
+/**
+ * Whether you want to vote up or down, 0 for down, 1 for up.
+ */
 export type VoteType = 'down' | 'up' | 0 | 1;
 
+/**
+ * The length range of hash prefix that will be accepted to search for a video by.
+ */
 export type PrefixRange = 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32;
 
 /**
