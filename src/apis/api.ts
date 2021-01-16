@@ -161,7 +161,7 @@ export default class SponsorBlock implements SponsorBlockAPI {
 	async isVIP(): Promise<boolean> {
 		let res = await fetch(`${this.options.baseURL}/api/isUserVIP?userID=${this.userID}`);
 		statusCheck(res);
-		return await res.json();
+		return (await res.json()).vip
 	}
 
 	getHashedUserID(): string {
