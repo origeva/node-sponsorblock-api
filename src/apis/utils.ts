@@ -1,4 +1,5 @@
 import { Response } from 'node-fetch';
+import { ResponseError } from './ResponseError';
 
 export function statusCheck(res: Response) {
 	if (res.status !== 200) {
@@ -17,12 +18,5 @@ export function statusCheck(res: Response) {
 		} else {
 			throw new ResponseError(res.status, `Status code not 200 (${res.status})`);
 		}
-	}
-}
-
-class ResponseError extends Error {
-	constructor(public status: number, message?: string) {
-		super(message);
-		this.name = 'ResponseError';
 	}
 }

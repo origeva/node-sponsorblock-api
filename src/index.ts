@@ -9,3 +9,4 @@ export const config: SponsorBlockOptions = {
 export { SponsorBlock, SponsorBlockVIP, SponsorBlockAdmin } from './apis/first';
 export { SponsorBlockLegacy } from './apis/legacy';
 export { extractVideoID } from './utils';
+export { ResponseError } from './apis/ResponseError';
