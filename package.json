@@ -15,8 +15,7 @@
 	"scripts": {
 		"dev": "nodemon",
 		"test": "mocha -r ts-node/register tests/**/*.ts",
-		"build": "npm test && rd /s /q lib & echo Building... & tsc",
-		"build:force": "tsc",
+		"build": "rd /s /q lib & echo Building... & tsc",
 		"clean": "rd /s /q lib",
 		"prepare": "npm test && rd /s /q lib & echo Building... & tsc"
 	},
