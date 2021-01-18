@@ -1,7 +1,7 @@
-import { SponsorBlockLegacy } from '../../../src';
 import { config } from '../../config';
 import { assert } from 'chai';
-import { Category } from '../../../src/types/segment.model';
+import Category from '../../../src/types/segment/Category';
+import { SponsorBlockLegacy } from '../../../src/apis/legacy';
 
 describe('Legacy getSegments', () => {
 	it('should return an array of segments', async () => {

@@ -1,0 +1,1 @@
+export { SponsorBlockLegacy } from './user';

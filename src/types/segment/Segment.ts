@@ -1,11 +1,13 @@
+import Category from './Category';
+
 /**
  * SponsorBlock segment with times where the content is deemed as one of the categories that you might want to skip.
  */
-export type Segment = {
+type Segment = {
 	/**
 	 * The ID of the Segment in the database, should not be assigned locally.
 	 */
-	UUID?: string;
+	UUID: string;
 
 	/**
 	 * The start time of the segment.
@@ -22,12 +24,4 @@ export type Segment = {
 	 */
 	category: Category;
 };
-
-export function isSegment(object: any): object is Segment {
-	return object.UUID && object.startTime && object.endTime && object.category;
-}
-
-/**
- * The category of a segment
- */
-export type Category = 'sponsor' | 'intro' | 'outro' | 'interaction' | 'selfpromo' | 'music_offtopic';
+export default Segment;

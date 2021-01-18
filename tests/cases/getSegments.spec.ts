@@ -1,12 +1,10 @@
-import SponsorBlock from '../../src/index';
-import { isSegment, Segment } from '../../src/types/segment.model';
+import Segment from '../../src/types/segment/Segment';
 import { config } from '../config';
 import { assert } from 'chai';
 
 const { sponsorBlock, videoID } = config;
 
 describe('getSegments', () => {
-	const sponsorBlock = new SponsorBlock('test');
 	const videoID = 'jiK2jmTVF3A';
 	it(`should return an array of category 'sponsor'`, async () => {
 		let segments = await sponsorBlock.getSegments(videoID);

@@ -1,4 +1,3 @@
-import SponsorBlock from '../../src/index';
 import { assert } from 'chai';
 import { config } from '../config';
 
