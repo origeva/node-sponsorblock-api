@@ -1,4 +1,4 @@
-import Category from 'src/types/segment/Category';
+import { Category } from 'src/types/segment/Category';
 import { SponsorBlockOptions } from '../interfaces';
 import { SponsorBlock } from './user';
 import { resolveVideo, VideoResolvable } from './utils';

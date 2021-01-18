@@ -1,6 +1,6 @@
-import Category from './Category';
+import { Category } from './Category';
 
-type LocalSegment = {
+export type LocalSegment = {
 	/**
 	 * The start time of the segment.
 	 */
@@ -16,4 +16,3 @@ type LocalSegment = {
 	 */
 	category: Category;
 };
-export default LocalSegment;

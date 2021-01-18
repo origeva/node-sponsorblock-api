@@ -1,2 +1,1 @@
-type OverallStats = { userCount: number; viewCount: number; totalSubmissions: number; minutesSaved: number };
-export default OverallStats;
+export type OverallStats = { userCount: number; viewCount: number; totalSubmissions: number; minutesSaved: number };

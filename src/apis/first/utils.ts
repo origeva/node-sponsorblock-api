@@ -1,6 +1,6 @@
-import Segment from 'src/types/segment/Segment';
-import UserStat from 'src/types/stats/UserStat';
-import Video from 'src/types/Video';
+import { Segment } from 'src/types/segment/Segment';
+import { UserStats } from 'src/types/stats/UserStat';
+import { Video } from 'src/types/Video';
 
 export type SegmentUUID = string;
 
@@ -30,8 +30,8 @@ export function resolveVideo(resolvable: VideoResolvable): VideoID {
 	return videoID;
 }
 
-export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCounts: number[]; totalSubmissions: number[]; minutesSaved: number[] }): UserStat[] {
-	let userStats: UserStat[] = [];
+export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCounts: number[]; totalSubmissions: number[]; minutesSaved: number[] }): UserStats[] {
+	let userStats: UserStats[] = [];
 	for (let i = 0; i < dbuserStat.userNames[0].length; i++) {
 		let { userNames, viewCounts, totalSubmissions, minutesSaved } = dbuserStat;
 		userStats.push({ userName: userNames[i], viewCounts: viewCounts[i], totalSubmissions: totalSubmissions[i], minutesSaved: minutesSaved[i] });

@@ -1,9 +1,9 @@
-import Category from './Category';
+import { Category } from './Category';
 
 /**
  * SponsorBlock segment with times where the content is deemed as one of the categories that you might want to skip.
  */
-type Segment = {
+export type Segment = {
 	/**
 	 * The ID of the Segment in the database, should not be assigned locally.
 	 */
@@ -24,4 +24,3 @@ type Segment = {
 	 */
 	category: Category;
 };
-export default Segment;

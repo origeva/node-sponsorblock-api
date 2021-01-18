@@ -1,4 +1,3 @@
-import Category from '../segment/Category';
+import { Category } from '../segment/Category';
 
-type CategoryVote = { UUID: string; category: Category };
-export default CategoryVote;
+export type CategoryVote = { UUID: string; category: Category };

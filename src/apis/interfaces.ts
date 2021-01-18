@@ -1,13 +1,13 @@
-import Segment from 'src/types/segment/Segment';
-import Category from 'src/types/segment/Category';
-import LocalSegment from 'src/types/segment/LocalSegment';
-import UserStats from 'src/types/stats/UserStat';
-import OverallStats from 'src/types/stats/OverallStats';
-import Video from 'src/types/Video';
-import VoteType from 'src/types/vote/VoteType';
-import PrefixRange from '../types/PrefixRange';
+import { Segment } from 'src/types/segment/Segment';
+import { Category } from 'src/types/segment/Category';
+import { LocalSegment } from 'src/types/segment/LocalSegment';
+import { UserStats } from 'src/types/stats/UserStat';
+import { OverallStats } from 'src/types/stats/OverallStats';
+import { Video } from 'src/types/Video';
+import { VoteType } from 'src/types/vote/VoteType';
+import { PrefixRange } from '../types/PrefixRange';
 import { SegmentResolvable, VideoResolvable } from './first/utils';
-import SortType from 'src/types/stats/SortType';
+import { SortType } from 'src/types/stats/SortType';
 
 export type SponsorBlockOptions = {
 	/**

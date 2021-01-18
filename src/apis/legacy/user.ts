@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { config } from '../../index';
-import Segment from '../../types/segment/Segment';
+import { Segment } from '../../types/segment/Segment';
 import { SponsorBlockOptions } from '../interfaces';
 import { statusCheck } from '../utils';
 

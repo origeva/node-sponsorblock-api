@@ -1,6 +1,6 @@
 import { config } from '../../config';
 import { assert } from 'chai';
-import Category from '../../../src/types/segment/Category';
+import { Category } from '../../../src/types/segment/Category';
 import { SponsorBlockLegacy } from '../../../src/apis/legacy';
 
 describe('Legacy getSegments', () => {

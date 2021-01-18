@@ -1,4 +1,4 @@
-import Segment from '../../src/types/segment/Segment';
+import { Segment } from '../../src/types/segment/Segment';
 import { config } from '../config';
 import { assert } from 'chai';
 

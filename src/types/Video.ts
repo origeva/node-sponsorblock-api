@@ -1,4 +1,3 @@
-import Segment from './segment/Segment';
+import { Segment } from './segment/Segment';
 
-type Video = { videoID: string; hash: string; segments: Segment[] };
-export default Video;
+export type Video = { videoID: string; hash: string; segments: Segment[] };

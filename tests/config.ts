@@ -1,4 +1,4 @@
-import { SponsorBlock, extractVideoID } from '../src';
+import { SponsorBlock } from '../src';
 
 export const config = {
 	sponsorBlock: new SponsorBlock('test'),

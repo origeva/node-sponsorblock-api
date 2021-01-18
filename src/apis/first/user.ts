@@ -1,17 +1,17 @@
 import fetch from 'node-fetch';
-import Segment from 'src/types/segment/Segment';
-import Category from 'src/types/segment/Category';
-import LocalSegment from 'src/types/segment/LocalSegment';
+import { Segment } from 'src/types/segment/Segment';
+import { Category } from 'src/types/segment/Category';
+import { LocalSegment } from 'src/types/segment/LocalSegment';
 import crypto from 'crypto';
-import UserStat from '../../types/stats/UserStat';
-import OverallStats from '../../types/stats/OverallStats';
-import Video from 'src/types/Video';
+import { UserStats } from '../../types/stats/UserStat';
+import { OverallStats } from '../../types/stats/OverallStats';
+import { Video } from 'src/types/Video';
 import { config } from '../../index';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, VideoResolvable } from './utils';
 import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
-import VoteType from 'src/types/vote/VoteType';
+import { VoteType } from 'src/types/vote/VoteType';
 import { statusCheck } from '../utils';
-import SortType from 'src/types/stats/SortType';
+import { SortType } from 'src/types/stats/SortType';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -141,7 +141,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 		return data.userName;
 	}
 
-	async getTopUsers(sortType: SortType): Promise<UserStat[]> {
+	async getTopUsers(sortType: SortType): Promise<UserStats[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
 		let res = await fetch(`${this.options.baseURL}/api/getTopUsers?sortType=${sortType}`);
 		statusCheck(res);

@@ -1,5 +1,5 @@
 import { SponsorBlockOptions } from './apis/interfaces';
-import PrefixRange from './types/PrefixRange';
+import { PrefixRange } from './types/PrefixRange';
 
 export const config: SponsorBlockOptions = {
 	baseURL: 'https://sponsor.ajay.app', // Base URL for the api endpoints
@@ -10,3 +10,4 @@ export { SponsorBlock, SponsorBlockVIP, SponsorBlockAdmin } from './apis/first';
 export { SponsorBlockLegacy } from './apis/legacy';
 export { extractVideoID } from './utils';
 export { ResponseError } from './apis/ResponseError';
+export { Category } from './types/segment/Category';
