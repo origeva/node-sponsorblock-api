@@ -59,7 +59,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 		// returns nothing (status code 200)
 	}
 
-	async getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Video> {
+	async getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
 		let query = '';
@@ -77,7 +77,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 		let segments = filtered.segments.map((val) => {
 			return { UUID: val.UUID, startTime: val.segment[0], endTime: val.segment[1], category: val.category };
 		});
-		return { videoID: filtered.videoID, hash: filtered.hash, segments };
+		return segments;
 	}
 
 	// async vote(segment: Segment, type: VoteType): Promise<void>;
