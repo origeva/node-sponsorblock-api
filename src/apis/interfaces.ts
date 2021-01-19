@@ -54,11 +54,11 @@ export interface SponsorBlockAPI {
 
 	/**
 	 * Hashes the ID of the video and send the prefix of the hash so the server doesn't know which video you're looking for.
-	 * The method filters out the video that don't match the input videoID.
+	 * The method filters out the videos that don't match the input videoID.
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 * @param categories the categories of the segments. Defaults to "sponsor".
 	 */
-	getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Video>;
+	getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]>;
 
 	/**
 	 * Vote a submission up or down.
@@ -79,7 +79,7 @@ export interface SponsorBlockAPI {
 	 * To be used only after using a segment.
 	 * @param segment the UUID of the segment or the segment you've gotten from a different call.
 	 */
-	viewed(segment: SegmentResolvable): Promise<void>; // UUID or segment?
+	viewed(segment: SegmentResolvable): Promise<void>;
 
 	/**
 	 * Check how many times your submissions have been viewed.
