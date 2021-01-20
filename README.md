@@ -2,12 +2,12 @@
 
 ### Node module wrapper for SponsorBlock web API.
 
-#### Uses SponsorBlock API from https://sponsor.ajay.app/
+#### https://sponsor.ajay.app/
 
-Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}.
-Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de7) to abide the [license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License).
+Complete API documentation can be found [here](https://github.com/ajayyy/SponsorBlock/wiki/API-Docs).
+Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71) to abide the [license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License).
 
-###### usage:
+###### Usage:
 
 ```javascript
 const SponsorBlock = require('sponsorblock-api').SponsorBlock;
