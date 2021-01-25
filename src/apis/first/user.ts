@@ -5,8 +5,7 @@ import { LocalSegment } from 'src/types/segment/LocalSegment';
 import crypto from 'crypto';
 import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
-import { Video } from 'src/types/Video';
-import { config } from '../../index';
+import { defaultOptions } from '../../index';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, VideoResolvable } from './utils';
 import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
 import { VoteType } from 'src/types/vote/VoteType';
@@ -22,8 +21,7 @@ import { SortType } from 'src/types/stats/SortType';
  */
 export class SponsorBlock implements SponsorBlockAPI {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		options.baseURL = options.baseURL ?? config.baseURL;
-		options.hashPrefixLength = options.hashPrefixLength ?? config.hashPrefixLength;
+		options = { ...defaultOptions, ...options };
 	}
 
 	private hashedUserID: string;
