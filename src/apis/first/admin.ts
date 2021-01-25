@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
+import { SponsorBlockAdminAPI } from '../interfaces';
 import { statusCheck } from '../utils';
 import { SponsorBlockVIP } from './vip';
 
-export class SponsorBlockAdmin extends SponsorBlockVIP {
+export class SponsorBlockAdmin extends SponsorBlockVIP implements SponsorBlockAdminAPI {
 	// Admin Calls
 	// 17 POST /api/addUserAsVIP
 	async addVIP(publicUserID: string, enabled?: boolean): Promise<void> {
