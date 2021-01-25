@@ -21,7 +21,7 @@ import { SortType } from 'src/types/stats/SortType';
  */
 export class SponsorBlock implements SponsorBlockAPI {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		options = { ...defaultOptions, ...options };
+		this.options = { ...defaultOptions, ...options };
 	}
 
 	private hashedUserID: string;
