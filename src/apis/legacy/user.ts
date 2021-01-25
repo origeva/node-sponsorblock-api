@@ -1,13 +1,12 @@
 import fetch from 'node-fetch';
-import { config } from '../../index';
+import { defaultOptions } from '../../index';
 import { Segment } from '../../types/segment/Segment';
 import { SponsorBlockOptions } from '../interfaces';
 import { statusCheck } from '../utils';
 
 export class SponsorBlockLegacy {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		options.baseURL = options.baseURL ?? config.baseURL;
-		options.hashPrefixLength = options.hashPrefixLength ?? config.hashPrefixLength;
+		this.options = { ...defaultOptions, ...options };
 	}
 
 	// Legacy Calls
