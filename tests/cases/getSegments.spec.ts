@@ -16,12 +16,11 @@ describe('getSegments', () => {
 		assert.typeOf<Segment[]>(segments, 'array');
 		assert.typeOf<Segment>(segments[0], 'object');
 	});
-	it('should return an array of segments with only intro and outro categories', () => {
-		sponsorBlock.getSegments(videoID, 'intro', 'outro').then((segments) => {
-			assert.ok(
-				segments.every((segment) => segment.category === 'intro' || segment.category === 'outro'),
-				`getSegments('${videoID}', 'intro', 'outro'): Not every category is as requested`
-			);
-		});
+	it('should return an array of segments with only intro and outro categories', async () => {
+		let segments = await sponsorBlock.getSegments(videoID, 'intro', 'outro');
+		assert.ok(
+			segments.every((segment) => segment.category === 'intro' || segment.category === 'outro'),
+			`getSegments('${videoID}', 'intro', 'outro'): Not every category is as requested`
+		);
 	});
 });
