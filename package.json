@@ -15,9 +15,9 @@
 	"scripts": {
 		"dev": "nodemon",
 		"test": "mocha -t 3000 -r ts-node/register tests/**/*.ts",
-		"build": "rd /s /q lib & echo Building... & tsc",
+		"build": "npm clean & echo Building... & tsc",
 		"clean": "rd /s /q lib",
-		"prepare": "npm test && rd /s /q lib & echo Building... & tsc"
+		"prepare": "npm test && npm build"
 	},
 	"keywords": [
 		"sponsorblock-api",
@@ -27,7 +27,7 @@
 		"api"
 	],
 	"author": "Ori Geva",
-	"license": "ISC",
+	"license": "MIT",
 	"devDependencies": {
 		"@types/chai": "^4.2.14",
 		"@types/mocha": "^8.2.0",
