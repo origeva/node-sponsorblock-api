@@ -10,7 +10,7 @@ Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66
 ###### Usage:
 
 ```javascript
-const SponsorBlock = require('sponsorblock-api').SponsorBlock;
+const { SponsorBlock } = require('sponsorblock-api');
 const sponsorBlock = new SponsorBlock(userID); // userID is a locally generated uuid, save the id for future tracking of stats
 
 sponsorBlock.getSegments(videoID, 'intro', 'outro').then((segments) => {
