@@ -1,11 +1,10 @@
-import { Segment } from '../../src/types/segment/Segment';
-import { config } from '../config';
 import { assert } from 'chai';
+import { config } from '../config';
+import { Segment } from '../../src/types/segment/Segment';
 
 const { sponsorBlock, videoID } = config;
 
 describe('getSegments', () => {
-	const videoID = 'jiK2jmTVF3A';
 	it(`should return an array of category 'sponsor'`, async () => {
 		let segments = await sponsorBlock.getSegments(videoID);
 		assert.strictEqual(segments[0].category, 'sponsor', `getSegments('${videoID}'): Default category from API is not "sponsor"`);
