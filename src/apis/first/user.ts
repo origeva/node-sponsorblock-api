@@ -1,16 +1,16 @@
 import fetch from 'node-fetch';
-import { Segment } from 'src/types/segment/Segment';
-import { Category } from 'src/types/segment/Category';
-import { LocalSegment } from 'src/types/segment/LocalSegment';
 import crypto from 'crypto';
+import { Segment } from '../../types/segment/Segment';
+import { Category } from '../../types/segment/Category';
+import { LocalSegment } from '../../types/segment/LocalSegment';
 import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, VideoResolvable } from './utils';
 import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
-import { VoteType } from 'src/types/vote/VoteType';
+import { VoteType } from '../../types/vote/VoteType';
 import { statusCheck } from '../utils';
-import { SortType } from 'src/types/stats/SortType';
+import { SortType } from '../../types/stats/SortType';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
