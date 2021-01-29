@@ -7,6 +7,9 @@
 Complete API documentation can be found [here](https://github.com/ajayyy/SponsorBlock/wiki/API-Docs).
 Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71) to abide the [license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License).
 
+This is a very new library and I will be updating it frequently for small improvements.
+I intend to keep the function signatures the same but it may change in case of a fundamental mistake on my part or an API change with SponsorBlock, for any suggestions you're more than welcome to open an issue on GitHub.
+
 ###### Usage:
 
 ```javascript
@@ -57,10 +60,7 @@ try {
 }
 ```
 
-Currently there seems to be an issue where VS Code will show function parameters to be of type 'any'.
-Notice that whenever you need to pass a segment parameter you can either pass a segment UUID or a segment object fetched from a different call (type SegmentResolvable).
-Similar approach to video parameter (type VideoResolvable).
-For category parameters, you can pass one of the following strings: `'sponsor', 'intro', 'outro', 'interaction', 'selfpromo', 'music_offtopic'`.
+Currently there seems to be an issue where VS Code will show function parameters to be of type 'any'. **Fixed as of 0.1.2** .d.ts issue
 
 ###### API interface:
 
