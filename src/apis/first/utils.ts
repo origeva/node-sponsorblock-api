@@ -1,6 +1,6 @@
-import { Segment } from 'src/types/segment/Segment';
-import { UserStats } from 'src/types/stats/UserStat';
-import { Video } from 'src/types/Video';
+import { Segment } from '../../types/segment/Segment';
+import { UserStats } from '../../types/stats/UserStat';
+import { Video } from '../../types/Video';
 
 export type SegmentUUID = string;
 
