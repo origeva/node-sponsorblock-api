@@ -5,7 +5,7 @@ import { config } from '../config';
 const { sponsorBlock, videoID } = config;
 
 describe('getSegmentsPrivately', () => {
-	it('should return a Video', async () => {
+	it('should return a segment array', async () => {
 		let segments = await sponsorBlock.getSegmentsPrivately(videoID);
 		assert.ok(segments.every(isSegment), `sponsorBlock.getSegmentsPrivately('${videoID}'): segments is not of type Segment[]`);
 	});
