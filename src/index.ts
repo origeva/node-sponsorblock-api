@@ -8,5 +8,5 @@ export const defaultOptions: SponsorBlockOptions = {
 export { SponsorBlock, SponsorBlockVIP, SponsorBlockAdmin } from './apis/first';
 export { SponsorBlockLegacy } from './apis/legacy';
 export { ResponseError } from './errors/ResponseError';
-export * as utils from './utils';
-export * as types from './types';
+export * from './utils';
+export * from './types';
