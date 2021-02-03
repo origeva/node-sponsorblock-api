@@ -1,5 +1,5 @@
-import { Response } from 'node-fetch';
-import { ResponseError } from './ResponseError';
+import { Response } from 'cross-fetch';
+import { ResponseError } from '../errors/ResponseError';
 
 export function statusCheck(res: Response) {
 	if (res.status !== 200) {

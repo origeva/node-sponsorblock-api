@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from 'cross-fetch';
 import { SponsorBlockAdminAPI } from '../interfaces';
 import { statusCheck } from '../utils';
 import { SponsorBlockVIP } from './vip';

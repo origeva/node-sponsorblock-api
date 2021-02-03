@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from 'cross-fetch';
 import { defaultOptions } from '../../index';
 import { Segment } from '../../types/segment/Segment';
 import { SponsorBlockOptions } from '../interfaces';

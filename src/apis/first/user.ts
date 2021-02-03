@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from 'cross-fetch';
 import crypto from 'crypto';
 import { Segment } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
@@ -70,7 +70,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 			(video) => video.videoID === videoID
 		);
 		if (!filtered) {
-			throw new Error('Not found');
+			throw new Error('[SponsorBlock] Not found within returned videos');
 		}
 		let segments = filtered.segments.map((val) => {
 			return { UUID: val.UUID, startTime: val.segment[0], endTime: val.segment[1], category: val.category };
