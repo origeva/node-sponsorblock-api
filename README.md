@@ -2,6 +2,8 @@
 
 ### Node module wrapper for SponsorBlock web API.
 
+#### Now works with the browser's runtime.
+
 #### https://sponsor.ajay.app/
 
 Complete API documentation can be found [here](https://github.com/ajayyy/SponsorBlock/wiki/API-Docs).
@@ -56,7 +58,9 @@ import { ResponseError } from 'sponsorblock-api'
 try {
 	await sponsorBlock.getSegments('videoID that will not be found');
 } catch (e) {
-	console.log(e instaceof ResponseError) // true
+	if (e instaceof ResponseError) {
+		// SponsorBlock error handling
+	}
 }
 ```
 
@@ -125,4 +129,4 @@ type PrefixRange = 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 
 
 ## Issues:
 
-feel free to open an issue for suggestions or any unexpected behavior encountered
+Feel free to open an issue for suggestions or any unexpected behavior encountered
