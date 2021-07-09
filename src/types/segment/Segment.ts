@@ -23,4 +23,14 @@ export type Segment = {
 	 * The category of the segment.
 	 */
 	category: Category;
+
+	/**
+	 * Duration of the video when submission occurred
+	 */
+	videoDuration: number;
+};
+
+export enum Service {
+	YouTube = 'YouTube',
+	PeerTube = 'PeerTube'
 };

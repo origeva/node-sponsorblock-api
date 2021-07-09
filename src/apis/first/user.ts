@@ -1,16 +1,19 @@
 import fetch from 'cross-fetch';
 import crypto from 'crypto';
-import { Segment } from '../../types/segment/Segment';
+import { Segment, Service } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
 import { LocalSegment } from '../../types/segment/LocalSegment';
 import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
-import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, VideoResolvable } from './utils';
+import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, SegmentUUID, VideoResolvable } from './utils';
 import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
 import { VoteType } from '../../types/vote/VoteType';
 import { statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';
+import { segmentInfo } from 'src/types/stats/SegmentInfo';
+import { userIDPair } from 'src/types/user';
+import { categoryLock } from 'src/types/segment/LockCategories';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -26,17 +29,17 @@ export class SponsorBlock implements SponsorBlockAPI {
 
 	private hashedUserID: string;
 
-	async getSegments(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]> {
+	async getSegments(video: VideoResolvable, categories: Category[] = ["sponsor"], service:Service = Service.YouTube, ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
-		let query = `?videoID=${videoID}`;
-		if (categories.length > 0) {
-			query += `&categories=${JSON.stringify(categories)}`;
+		let query = `?videoID=${videoID}&service=${service}&categories=${JSON.stringify(categories)}`;
+		if (requiredSegments.length > 0) {
+			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`
 		}
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments${query}`);
 		statusCheck(res);
-		let data = (await res.json()) as { UUID: string; segment: [number, number]; category: Category }[];
-		let segments = data.map(({ UUID, segment, category }) => {
-			return { UUID, startTime: segment[0], endTime: segment[1], category };
+		let data = (await res.json()) as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
+		let segments = data.map(({ UUID, segment, category, videoDuration }) => {
+			return { UUID, startTime: segment[0], endTime: segment[1], category , videoDuration };
 		});
 		return segments;
 	}
@@ -57,23 +60,23 @@ export class SponsorBlock implements SponsorBlockAPI {
 		// returns nothing (status code 200)
 	}
 
-	async getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]> {
+	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ["sponsor"], service:Service = Service.YouTube, ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let query = '';
-		if (categories.length > 0) {
-			query += `?categories=${JSON.stringify(categories)}`;
+		let query = `?service=${service}&categories=${JSON.stringify(categories)}`;
+		if (requiredSegments.length > 0) {
+			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`
 		}
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments/${hashPrefix}${query}`);
 		statusCheck(res);
-		let filtered = ((await res.json()) as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category }[] }[]).find(
+		let filtered = ((await res.json()) as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category, videoDuration: number }[] }[]).find(
 			(video) => video.videoID === videoID
 		);
 		if (!filtered) {
 			throw new Error('[SponsorBlock] Not found within returned videos');
 		}
 		let segments = filtered.segments.map((val) => {
-			return { UUID: val.UUID, startTime: val.segment[0], endTime: val.segment[1], category: val.category };
+			return { UUID: val.UUID, startTime: val.segment[0], endTime: val.segment[1], category: val.category, videoDuration: val.videoDuration };
 		});
 		return segments;
 	}
@@ -82,7 +85,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 	// async vote(UUID: string, type: VoteType): Promise<void>;
 	async vote(segment: SegmentResolvable, type: VoteType): Promise<void> {
 		let UUID = resolveSegment(segment);
-		type = type === 'down' ? 0 : type === 'up' ? 1 : type;
+		type = type === 'down' ? 0 : type === 'up' ? 1 : type === 'undo' ? 20 : type;
 		let query = `?UUID=${UUID}&userID=${this.userID}&type=${type}`;
 		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
 		statusCheck(res);
@@ -172,5 +175,40 @@ export class SponsorBlock implements SponsorBlockAPI {
 			value = crypto.createHash('sha256').update(value).digest('hex');
 		}
 		return (this.hashedUserID = value);
+	}
+
+	async getSegmentInfo(segments: SegmentResolvable[]): Promise<segmentInfo[]> {
+		let UUIDs = segments.map(segment => resolveSegment(segment));
+		let query = `?UUIDs=${JSON.stringify(UUIDs)}`;
+		let res = await fetch(`${this.options.baseURL}/api/segmentInfo${query}`);
+		statusCheck(res);
+		return await res.json();
+	}
+
+	async getUserID(username: string, exact: boolean = false): Promise<userIDPair[]> {
+		let res = await fetch(`${this.options.baseURL}/api/userID?username=${username}&exact=${exact.toString()}`);
+		statusCheck(res);
+		return await res.json()
+	}
+
+	async getLockCategories(video: VideoResolvable): Promise<Category[]> {
+		let videoID = resolveVideo(video);
+		let res = await fetch(`${this.options.baseURL}/api/lockCategories?videoID=${videoID}`);
+		statusCheck(res);
+		return (await res.json()).categories
+	}
+
+	async getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]> {
+		let videoID = resolveVideo(video);
+		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
+		let res = await fetch(`${this.options.baseURL}/api/skipSegments/${hashPrefix}`);
+		statusCheck(res);
+		let filtered = ((await res.json()) as { videoID: string; hash: string; categories: Category[] }[]).find(
+			(video) => video.videoID === videoID
+		);
+		if (!filtered) {
+			throw new Error('[SponsorBlock] Not found within returned videos');
+		}
+		return filtered.categories;
 	}
 }
