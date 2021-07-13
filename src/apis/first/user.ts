@@ -29,9 +29,9 @@ export class SponsorBlock implements SponsorBlockAPI {
 
 	private hashedUserID: string;
 
-	async getSegments(video: VideoResolvable, categories: Category[] = ["sponsor"], service:Service = Service.YouTube, ...requiredSegments: string[]): Promise<Segment[]> {
+	async getSegments(video: VideoResolvable, categories: Category[] = ["sponsor"], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
-		let query = `?videoID=${videoID}&service=${service}&categories=${JSON.stringify(categories)}`;
+		let query = `?videoID=${videoID}&service=${this.options.service}&categories=${JSON.stringify(categories)}`;
 		if (requiredSegments.length > 0) {
 			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`
 		}
@@ -60,10 +60,10 @@ export class SponsorBlock implements SponsorBlockAPI {
 		// returns nothing (status code 200)
 	}
 
-	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ["sponsor"], service:Service = Service.YouTube, ...requiredSegments: string[]): Promise<Segment[]> {
+	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ["sponsor"], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let query = `?service=${service}&categories=${JSON.stringify(categories)}`;
+		let query = `?service=${this.options.service}&categories=${JSON.stringify(categories)}`;
 		if (requiredSegments.length > 0) {
 			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`
 		}

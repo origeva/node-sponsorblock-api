@@ -23,6 +23,12 @@ export type SponsorBlockOptions = {
 	 * @default 4
 	 */
 	hashPrefixLength?: PrefixRange;
+
+	/**
+	 * Service to query segments from
+	 * @default Service.YouTube
+	 */
+	service?: Service.YouTube;
 };
 
 /**
