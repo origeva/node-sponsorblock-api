@@ -1,6 +1,6 @@
 import fetch from 'cross-fetch';
 import { defaultOptions } from '../../index';
-import { Segment } from '../../types/segment/Segment';
+import { Segment, LegacySegment } from '../../types/segment/Segment';
 import { SponsorBlockOptions } from '../interfaces';
 import { statusCheck } from '../utils';
 
@@ -15,11 +15,11 @@ export class SponsorBlockLegacy {
 	 * @param videoID The ID of the video to get segments for.
 	 * @deprecated This method is deprecated and should not be used.
 	 */
-	async getSegments(videoID: string): Promise<Segment[]> {
+	async getSegments(videoID: string): Promise<LegacySegment[]> {
 		let res = await fetch(`${this.options.baseURL}/api/getVideoSponsorTimes?videoID=${videoID}`);
 		statusCheck(res);
 		let data = (await res.json()) as { sponsorTimes: [number, number][]; UUIDs: string[] };
-		let segments: Segment[] = [];
+		let segments: LegacySegment[] = [];
 		for (let i = 0; i < data.UUIDs.length; i++) {
 			segments.push({ UUID: data.UUIDs[i], startTime: data.sponsorTimes[i][0], endTime: data.sponsorTimes[i][1], category: 'sponsor' });
 		}
