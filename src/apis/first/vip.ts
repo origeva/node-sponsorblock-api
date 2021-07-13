@@ -53,12 +53,26 @@ export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPAPI 
 		// returns nothing (status code 200)
 	}
 
-	async warnUser(publicUserID: string, enabled?: boolean): Promise<void> {
+	async warnUser(publicUserID: string, reason: string = '', enabled?: boolean): Promise<void> {
 		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
 			method: 'POST',
-			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled }),
+			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled, reason }),
 			headers: { 'Content-Type': 'application/json' },
 		});
+		statusCheck(res);
+		// returns nothing (status code 200)
+	}
+
+	async clearCache(video: VideoResolvable): Promise<void> {
+		let videoID = resolveVideo(video);
+		let res = await fetch(`${this.options.baseURL}/api/clearCache?videoID=${videoID}&userID=${this.userID}`);
+		statusCheck(res);
+		// returns nothing (status code 200)
+	}
+
+	async purgeAllSegments(video: VideoResolvable): Promise<void> {
+		let videoID = resolveVideo(video);
+		let res = await fetch(`${this.options.baseURL}/api/purgeAllSegments?videoID=${videoID}&userID=${this.userID}`);
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}

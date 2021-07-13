@@ -1,5 +1,12 @@
 import { Category } from './Category';
 
+export type LegacySegment = {
+	UUID: string;
+	startTime: number;
+	endTime: number;
+	category: 'sponsor';
+}
+
 /**
  * SponsorBlock segment with times where the content is deemed as one of the categories that you might want to skip.
  */
@@ -23,4 +30,14 @@ export type Segment = {
 	 * The category of the segment.
 	 */
 	category: Category;
+
+	/**
+	 * Duration of the video when submission occurred
+	 */
+	videoDuration: number;
+};
+
+export enum Service {
+	YouTube = 'YouTube',
+	PeerTube = 'PeerTube'
 };

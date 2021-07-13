@@ -1,4 +1,4 @@
-import { Segment } from '../types/segment/Segment';
+import { Segment, Service } from '../types/segment/Segment';
 import { Category } from '../types/segment/Category';
 import { LocalSegment } from '../types/segment/LocalSegment';
 import { UserStats } from '../types/stats/UserStat';
@@ -7,6 +7,8 @@ import { VoteType } from '../types/vote/VoteType';
 import { PrefixRange } from '../types/PrefixRange';
 import { SegmentResolvable, VideoResolvable } from './first/utils';
 import { SortType } from '../types/stats/SortType';
+import { segmentInfo } from 'src/types/stats/SegmentInfo';
+import { userIDPair } from 'src/types/user';
 
 export type SponsorBlockOptions = {
 	/**
@@ -21,6 +23,12 @@ export type SponsorBlockOptions = {
 	 * @default 4
 	 */
 	hashPrefixLength?: PrefixRange;
+
+	/**
+	 * Service to query segments from
+	 * @default Service.YouTube
+	 */
+	service?: Service.YouTube;
 };
 
 /**
@@ -41,8 +49,10 @@ export interface SponsorBlockAPI {
 	 * Get the skip segments for a video of the specified categories.
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 * @param categories the categories of the segments. Defaults to "sponsor".
+	 * @param service the service to fetch sergments for. Defaults to YouTube.
+	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
-	getSegments(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]>;
+	getSegments(video: VideoResolvable, categories: Category[], service: Service, ...requiredSegments: string[]): Promise<Segment[]>;
 
 	/**
 	 * Submit new segments.
@@ -56,8 +66,10 @@ export interface SponsorBlockAPI {
 	 * The method filters out the videos that don't match the input videoID.
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 * @param categories the categories of the segments. Defaults to "sponsor".
+	 * @param service the service to fetch sergments for. Defaults to YouTube.
+	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
-	getSegmentsPrivately(video: VideoResolvable, ...categories: Category[]): Promise<Segment[]>;
+	getSegmentsPrivately(video: VideoResolvable, categories: Category[], service: Service, ...requiredSegments: string[]): Promise<Segment[]>;
 
 	/**
 	 * Vote a submission up or down.
@@ -125,6 +137,31 @@ export interface SponsorBlockAPI {
 	 * Get the hash of your local ID (as stored in the server's database).
 	 */
 	getHashedUserID(): string;
+
+	/**
+	 * Get information of segments
+	 * @param segments UUIDs of segments or segment from a different call
+	 */
+	getSegmentInfo(segments: string[]): Promise<segmentInfo[]>
+
+	/**
+	 * Get userID matches for a given username
+	 * @param username partial username to search for
+	 * @param exact if the lookup should be exact and not fuzzy
+	 */
+	getUserID(username: string, exact: boolean): Promise<userIDPair[]>
+
+	/**
+	 * Get locked categories for a given video
+	 * @param video the ID of a video or a video object gotten from a different call.
+	 */
+	getLockCategories(video: VideoResolvable): Promise<Category[]>
+
+	/**
+	 * Get locked categores for a given video privately
+	 * @param video the ID of a video or a video object gotten from a different call.
+	 */
+	getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]>
 }
 
 export interface SponsorBlockVIPAPI extends SponsorBlockAPI {
@@ -137,14 +174,43 @@ export interface SponsorBlockVIPAPI extends SponsorBlockAPI {
 	 */
 	blockSubmissionsOfCategory(video: VideoResolvable, ...categories: Category[]): Promise<void>;
 
+	/**
+	 * Shadowban User
+	 * @param publicUserID the ID of the user to shadowban.
+	 */
 	shadowBan(publicUserID: string): Promise<void>;
 
+	/**
+	 * Un-shadowban user
+	 * @param publicUserID the ID of the user to unban.
+	 */
 	removeShadowBan(publicUserID: string): Promise<void>;
 
+	/**
+	 * Shadowban user and hide old submissions
+	 * @param publicUserID the ID of the user to shadow hide submissions for.
+	 */
 	hideOldSubmissions(publicUserID: string): Promise<void>;
 
-	// 16 POST /api/warnUser
-	warnUser(publicUserID: string, enabled?: boolean): Promise<void>;
+	/**
+	 * Warn a user
+	 * @param publicUserID the ID of the user to warn.
+	 * @param reason reason for warning.
+	 * @param enabled enable or disable warning.
+	 */
+	warnUser(publicUserID: string, reason: string, enabled?: boolean): Promise<void>;
+
+	/**
+	 * Clear redis cache of a video
+	 * @param video The ID of a video or a video object gotten from a different call.
+	 */
+	clearCache(video: VideoResolvable): Promise<void>;
+
+	/**
+	 * Hide all segments on a video
+	 * @param video The ID of a video or a video object gotten from a different call.
+	 */
+	purgeAllSegments(video: VideoResolvable): Promise<void>;
 }
 
 export interface SponsorBlockAdminAPI extends SponsorBlockVIPAPI {
