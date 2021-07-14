@@ -46,5 +46,18 @@ jspm_packages/
 .env.test
 .env*.local
 
-# TypeScript source files
+# Prettier settings
+.prettierrc.js
+
+# TypeScript source / test files
 src/
+test/
+
+# Nodemon settings
+nodemon.json
+
+# tsconfig
+tsconfig.json
+
+# gitignore
+.gitignore
