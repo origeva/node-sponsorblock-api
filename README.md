@@ -18,7 +18,7 @@ I intend to keep the function signatures the same but it may change in case of a
 const { SponsorBlock } = require('sponsorblock-api');
 const sponsorBlock = new SponsorBlock(userID); // userID is a locally generated uuid, save the id for future tracking of stats
 
-sponsorBlock.getSegments(videoID, 'intro', 'outro').then((segments) => {
+sponsorBlock.getSegments(videoID, ['intro', 'outro']).then((segments) => {
 	console.log(segments);
 });
 ```
@@ -29,7 +29,7 @@ sponsorBlock.getSegments(videoID, 'intro', 'outro').then((segments) => {
 import { SponsorBlock } from 'sponsorblock-api';
 const sponsorBlock = new SponsorBlock(userID); // userID is a locally generated uuid, save the id for future tracking of stats
 
-sponsorBlock.getSegments(videoID, 'sponsor', 'selfpromo').then((segments) => {
+sponsorBlock.getSegments(videoID, ['sponsor', 'selfpromo']).then((segments) => {
 	console.log(segments);
 });
 ```
@@ -67,6 +67,8 @@ try {
 Currently there seems to be an issue where VS Code will show function parameters to be of type 'any'. **Fixed as of 0.1.2** .d.ts issue
 
 ###### API interface:
+
+###### api interface readme outdated
 
 ```typescript
 interface SponsorBlockAPI {
