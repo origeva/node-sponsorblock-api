@@ -37,7 +37,7 @@ export type Segment = {
 	videoDuration: number;
 };
 
-export enum Service {
-	YouTube = 'YouTube',
-	PeerTube = 'PeerTube'
-};
+/**
+ * The service to fetch sergments for. Defaults to YouTube.
+ */
+export type Service = 'YouTube' | 'PeerTube';

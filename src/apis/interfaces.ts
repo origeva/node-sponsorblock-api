@@ -26,9 +26,9 @@ export type SponsorBlockOptions = {
 
 	/**
 	 * Service to query segments from
-	 * @default Service.YouTube
+	 * @default 'YouTube'
 	 */
-	service?: Service.YouTube;
+	service?: Service;
 };
 
 /**
@@ -49,7 +49,6 @@ export interface SponsorBlockAPI {
 	 * Get the skip segments for a video of the specified categories.
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 * @param categories the categories of the segments. Defaults to "sponsor".
-	 * @param service the service to fetch sergments for. Defaults to YouTube.
 	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
 	getSegments(video: VideoResolvable, categories: Category[], ...requiredSegments: string[]): Promise<Segment[]>;
@@ -66,7 +65,6 @@ export interface SponsorBlockAPI {
 	 * The method filters out the videos that don't match the input videoID.
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 * @param categories the categories of the segments. Defaults to "sponsor".
-	 * @param service the service to fetch sergments for. Defaults to YouTube.
 	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
 	getSegmentsPrivately(video: VideoResolvable, categories: Category[], ...requiredSegments: string[]): Promise<Segment[]>;
