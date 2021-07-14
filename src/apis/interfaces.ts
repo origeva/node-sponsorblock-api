@@ -7,8 +7,8 @@ import { VoteType } from '../types/vote/VoteType';
 import { PrefixRange } from '../types/PrefixRange';
 import { SegmentResolvable, VideoResolvable } from './first/utils';
 import { SortType } from '../types/stats/SortType';
-import { segmentInfo } from 'src/types/stats/SegmentInfo';
-import { userIDPair } from 'src/types/user';
+import { SegmentInfo } from 'src/types/stats/SegmentInfo';
+import { UserIDPair } from 'src/types/user';
 
 export type SponsorBlockOptions = {
 	/**
@@ -142,14 +142,14 @@ export interface SponsorBlockAPI {
 	 * Get information of segments
 	 * @param segments UUIDs of segments or segment from a different call
 	 */
-	getSegmentInfo(segments: string[]): Promise<segmentInfo[]>
+	getSegmentInfo(segments: string[]): Promise<SegmentInfo[]>
 
 	/**
 	 * Get userID matches for a given username
 	 * @param username partial username to search for
 	 * @param exact if the lookup should be exact and not fuzzy
 	 */
-	getUserID(username: string, exact: boolean): Promise<userIDPair[]>
+	getUserID(username: string, exact: boolean): Promise<UserIDPair[]>
 
 	/**
 	 * Get locked categories for a given video

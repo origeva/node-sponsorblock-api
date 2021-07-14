@@ -1,7 +1,7 @@
-export type userName = string;
+export type username = string;
 export type userID = string;
 
-export type userIDPair = {
-  userName: userName,
+export type UserIDPair = {
+  userName: username,
   userID: userID
 }

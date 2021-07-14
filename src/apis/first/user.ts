@@ -1,6 +1,6 @@
 import fetch from 'cross-fetch';
 import crypto from 'crypto';
-import { Segment, Service } from '../../types/segment/Segment';
+import { Segment } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
 import { LocalSegment } from '../../types/segment/LocalSegment';
 import { UserStats } from '../../types/stats/UserStat';
@@ -11,8 +11,8 @@ import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
 import { VoteType } from '../../types/vote/VoteType';
 import { statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';
-import { segmentInfo } from 'src/types/stats/SegmentInfo';
-import { userIDPair } from 'src/types/user';
+import { SegmentInfo } from 'src/types/stats/SegmentInfo';
+import { UserIDPair } from 'src/types/user';
 import { categoryLock } from 'src/types/segment/LockCategories';
 
 /**
@@ -177,7 +177,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 		return (this.hashedUserID = value);
 	}
 
-	async getSegmentInfo(segments: SegmentResolvable[]): Promise<segmentInfo[]> {
+	async getSegmentInfo(segments: SegmentResolvable[]): Promise<SegmentInfo[]> {
 		let UUIDs = segments.map(segment => resolveSegment(segment));
 		let query = `?UUIDs=${JSON.stringify(UUIDs)}`;
 		let res = await fetch(`${this.options.baseURL}/api/segmentInfo${query}`);
@@ -185,7 +185,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 		return await res.json();
 	}
 
-	async getUserID(username: string, exact: boolean = false): Promise<userIDPair[]> {
+	async getUserID(username: string, exact: boolean = false): Promise<UserIDPair[]> {
 		let res = await fetch(`${this.options.baseURL}/api/userID?username=${username}&exact=${exact.toString()}`);
 		statusCheck(res);
 		return await res.json()
