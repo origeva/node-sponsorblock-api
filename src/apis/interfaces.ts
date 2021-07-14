@@ -52,7 +52,7 @@ export interface SponsorBlockAPI {
 	 * @param service the service to fetch sergments for. Defaults to YouTube.
 	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
-	getSegments(video: VideoResolvable, categories: Category[], service: Service, ...requiredSegments: string[]): Promise<Segment[]>;
+	getSegments(video: VideoResolvable, categories: Category[], ...requiredSegments: string[]): Promise<Segment[]>;
 
 	/**
 	 * Submit new segments.
@@ -69,7 +69,7 @@ export interface SponsorBlockAPI {
 	 * @param service the service to fetch sergments for. Defaults to YouTube.
 	 * @param requiredSegments list of segment UUIDs to be required to retreived.
 	 */
-	getSegmentsPrivately(video: VideoResolvable, categories: Category[], service: Service, ...requiredSegments: string[]): Promise<Segment[]>;
+	getSegmentsPrivately(video: VideoResolvable, categories: Category[], ...requiredSegments: string[]): Promise<Segment[]>;
 
 	/**
 	 * Vote a submission up or down.
