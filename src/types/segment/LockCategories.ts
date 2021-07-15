@@ -1,4 +1,4 @@
-import { VideoID } from "src/apis/first/utils";
+import { VideoID } from "src/api/impl/utils";
 import { Category } from "./Category";
 
 export type categoryLock = {

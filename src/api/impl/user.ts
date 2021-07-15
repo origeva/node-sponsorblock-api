@@ -7,7 +7,7 @@ import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, SegmentUUID, VideoResolvable } from './utils';
-import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces';
+import { SponsorBlockAPI, SponsorBlockOptions } from '../interfaces/interfaces';
 import { VoteType } from '../../types/vote/VoteType';
 import { statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';

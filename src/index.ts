@@ -1,5 +1,4 @@
-import { SponsorBlockOptions } from './apis/interfaces';
-import { Service } from './types/segment/Segment';
+import { SponsorBlockOptions } from './api/interfaces/interfaces';
 
 export const defaultOptions: SponsorBlockOptions = {
 	baseURL: 'https://sponsor.ajay.app', // Base URL for the api endpoints
@@ -7,8 +6,7 @@ export const defaultOptions: SponsorBlockOptions = {
 	service: 'YouTube'
 };
 
-export { SponsorBlock, SponsorBlockVIP, SponsorBlockAdmin } from './apis/first';
-export { SponsorBlockLegacy } from './apis/legacy';
+export { SponsorBlock, SponsorBlockVIP, SponsorBlockAdmin } from './api/impl';
 export { ResponseError } from './errors/ResponseError';
 export * from './utils';
 export * from './types';

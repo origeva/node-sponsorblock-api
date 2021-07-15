@@ -1,12 +1,12 @@
-import { Segment, Service } from '../types/segment/Segment';
-import { Category } from '../types/segment/Category';
-import { LocalSegment } from '../types/segment/LocalSegment';
-import { UserStats } from '../types/stats/UserStat';
-import { OverallStats } from '../types/stats/OverallStats';
-import { VoteType } from '../types/vote/VoteType';
-import { PrefixRange } from '../types/PrefixRange';
-import { SegmentResolvable, VideoResolvable } from './first/utils';
-import { SortType } from '../types/stats/SortType';
+import { Segment, Service } from '../../types/segment/Segment';
+import { Category } from '../../types/segment/Category';
+import { LocalSegment } from '../../types/segment/LocalSegment';
+import { UserStats } from '../../types/stats/UserStat';
+import { OverallStats } from '../../types/stats/OverallStats';
+import { VoteType } from '../../types/vote/VoteType';
+import { PrefixRange } from '../../types/PrefixRange';
+import { SegmentResolvable, VideoResolvable } from '../impl/utils';
+import { SortType } from '../../types/stats/SortType';
 import { SegmentInfo } from 'src/types/stats/SegmentInfo';
 import { UserIDPair } from 'src/types/user';
 

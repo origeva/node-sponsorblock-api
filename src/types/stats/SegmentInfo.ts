@@ -1,4 +1,4 @@
-import { SegmentUUID, VideoID } from "src/apis/first/utils";
+import { SegmentUUID, VideoID } from "src/api/impl/utils";
 import { Category } from "../segment/Category";
 import { Service } from "../segment/Segment";
 
