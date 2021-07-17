@@ -1,35 +1,8 @@
-import { Segment, Service } from '../../types/segment/Segment';
-import { Category } from '../../types/segment/Category';
-import { LocalSegment } from '../../types/segment/LocalSegment';
-import { UserStats } from '../../types/stats/UserStat';
-import { OverallStats } from '../../types/stats/OverallStats';
-import { VoteType } from '../../types/vote/VoteType';
-import { PrefixRange } from '../../types/PrefixRange';
-import { SegmentResolvable, VideoResolvable } from '../impl/utils';
-import { SortType } from '../../types/stats/SortType';
+import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
+import { Category, LocalSegment, OverallStats, Segment, SortType, UserStats, VoteType } from 'src/types';
 import { SegmentInfo } from 'src/types/stats/SegmentInfo';
 import { UserIDPair } from 'src/types/user';
-
-export type SponsorBlockOptions = {
-	/**
-	 * The base URL to send requests to.
-	 * @default https://sponsor.ajay.app
-	 */
-	baseURL?: string;
-
-	/**
-	 * The length of the prefix of the hash to query the server with, the shorter the more private.
-	 * Accepts 3-32
-	 * @default 4
-	 */
-	hashPrefixLength?: PrefixRange;
-
-	/**
-	 * Service to query segments from
-	 * @default 'YouTube'
-	 */
-	service?: Service;
-};
+import { SegmentResolvable, VideoResolvable } from '../impl/utils';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -140,79 +113,24 @@ export interface SponsorBlockAPI {
 	 * Get information of segments
 	 * @param segments UUIDs of segments or segment from a different call
 	 */
-	getSegmentInfo(segments: string[]): Promise<SegmentInfo[]>
+	getSegmentInfo(segments: string[]): Promise<SegmentInfo[]>;
 
 	/**
 	 * Get userID matches for a given username
 	 * @param username partial username to search for
 	 * @param exact if the lookup should be exact and not fuzzy
 	 */
-	getUserID(username: string, exact: boolean): Promise<UserIDPair[]>
+	getUserID(username: string, exact: boolean): Promise<UserIDPair[]>;
 
 	/**
 	 * Get locked categories for a given video
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 */
-	getLockCategories(video: VideoResolvable): Promise<Category[]>
+	getLockCategories(video: VideoResolvable): Promise<Category[]>;
 
 	/**
 	 * Get locked categores for a given video privately
 	 * @param video the ID of a video or a video object gotten from a different call.
 	 */
-	getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]>
-}
-
-export interface SponsorBlockVIPAPI extends SponsorBlockAPI {
-	// VIP Calls
-
-	/**
-	 *
-	 * @param video The ID of a video or a video object gotten from a different call.
-	 * @param categories
-	 */
-	blockSubmissionsOfCategory(video: VideoResolvable, ...categories: Category[]): Promise<void>;
-
-	/**
-	 * Shadowban User
-	 * @param publicUserID the ID of the user to shadowban.
-	 */
-	shadowBan(publicUserID: string): Promise<void>;
-
-	/**
-	 * Un-shadowban user
-	 * @param publicUserID the ID of the user to unban.
-	 */
-	removeShadowBan(publicUserID: string): Promise<void>;
-
-	/**
-	 * Shadowban user and hide old submissions
-	 * @param publicUserID the ID of the user to shadow hide submissions for.
-	 */
-	hideOldSubmissions(publicUserID: string): Promise<void>;
-
-	/**
-	 * Warn a user
-	 * @param publicUserID the ID of the user to warn.
-	 * @param reason reason for warning.
-	 * @param enabled enable or disable warning.
-	 */
-	warnUser(publicUserID: string, reason: string, enabled?: boolean): Promise<void>;
-
-	/**
-	 * Clear redis cache of a video
-	 * @param video The ID of a video or a video object gotten from a different call.
-	 */
-	clearCache(video: VideoResolvable): Promise<void>;
-
-	/**
-	 * Hide all segments on a video
-	 * @param video The ID of a video or a video object gotten from a different call.
-	 */
-	purgeAllSegments(video: VideoResolvable): Promise<void>;
-}
-
-export interface SponsorBlockAdminAPI extends SponsorBlockVIPAPI {
-	// Admin Calls
-	// 17 POST /api/addUserAsVIP
-	addVIP(publicUserID: string, enabled?: boolean): Promise<void>;
+	getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]>;
 }

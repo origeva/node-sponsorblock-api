@@ -8,3 +8,4 @@ export { SortType } from './stats/SortType';
 export { UserStats } from './stats/UserStat';
 export { OverallStats } from './stats/OverallStats';
 export { PrefixRange } from './PrefixRange';
+export { SponsorBlockOptions } from './SponsorBlockOptions';

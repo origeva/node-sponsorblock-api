@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch';
-import { SponsorBlockAdminAPI } from '../interfaces/interfaces';
+import { SponsorBlockAdminAPI } from '../interfaces/admin';
 import { statusCheck } from '../utils';
 import { SponsorBlockVIP } from './vip';
 
