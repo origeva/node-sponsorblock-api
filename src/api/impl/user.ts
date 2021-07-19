@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import crypto from 'crypto';
+import { URL } from 'url';
 import { Segment } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
 import { LocalSegment } from '../../types/segment/LocalSegment';
@@ -8,13 +9,12 @@ import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, SegmentUUID, VideoResolvable } from './utils';
 import { SponsorBlockAPI } from '../interfaces/user';
-import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
+import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { VoteType } from '../../types/vote/VoteType';
 import { statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';
-import { SegmentInfo } from 'src/types/stats/SegmentInfo';
-import { UserIDPair } from 'src/types/user';
-import { categoryLock } from 'src/types/segment/LockCategories';
+import { SegmentInfo } from '../../types/stats/SegmentInfo';
+import { UserIDPair } from '../../types/user';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -25,6 +25,10 @@ import { categoryLock } from 'src/types/segment/LockCategories';
  */
 export class SponsorBlock implements SponsorBlockAPI {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
+		// new URL('').
+		// let baseURL = options.baseURL;
+		// baseURL = baseURL?.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+		if (options.baseURL?.endsWith('/')) options.baseURL = options.baseURL.slice(0, -1);
 		this.options = { ...defaultOptions, ...options };
 	}
 
