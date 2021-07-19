@@ -2,9 +2,9 @@ import fetch from 'cross-fetch';
 import { Category } from '../../types/segment/Category';
 import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
 import { SponsorBlock } from './user';
-import { resolveVideo, VideoResolvable } from './utils';
 import { SponsorBlockVIPAPI } from '../interfaces/vip';
-import { statusCheck } from '../utils';
+import { resolveVideo, statusCheck } from '../utils';
+import { VideoResolvable } from 'src/types/Video';
 
 export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPAPI {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {

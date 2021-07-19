@@ -5,7 +5,11 @@ export type LegacySegment = {
 	startTime: number;
 	endTime: number;
 	category: 'sponsor';
-}
+};
+
+export type SegmentUUID = string;
+
+export type SegmentResolvable = Segment | SegmentUUID;
 
 /**
  * SponsorBlock segment with times where the content is deemed as one of the categories that you might want to skip.
@@ -14,7 +18,7 @@ export type Segment = {
 	/**
 	 * The ID of the Segment in the database, should not be assigned locally.
 	 */
-	UUID: string;
+	UUID: SegmentUUID;
 
 	/**
 	 * The start time of the segment.

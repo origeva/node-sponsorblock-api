@@ -1,20 +1,19 @@
 import fetch from 'cross-fetch';
 import crypto from 'crypto';
-import { URL } from 'url';
-import { Segment } from '../../types/segment/Segment';
+import { Segment, SegmentResolvable } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
 import { LocalSegment } from '../../types/segment/LocalSegment';
 import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
-import { dbuserStatsToUserStats, resolveSegment, resolveVideo, SegmentResolvable, SegmentUUID, VideoResolvable } from './utils';
 import { SponsorBlockAPI } from '../interfaces/user';
 import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { VoteType } from '../../types/vote/VoteType';
-import { statusCheck } from '../utils';
+import { dbuserStatsToUserStats, resolveSegment, resolveVideo, statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';
 import { SegmentInfo } from '../../types/stats/SegmentInfo';
 import { UserIDPair } from '../../types/user';
+import { VideoResolvable } from '../../types/Video';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
