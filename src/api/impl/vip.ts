@@ -2,11 +2,11 @@ import fetch from 'cross-fetch';
 import { Category } from '../../types/segment/Category';
 import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
 import { SponsorBlock } from './user';
-import { SponsorBlockVIPAPI } from '../interfaces/vip';
+import { SponsorBlockVIPInterface } from '../interfaces/vip';
 import { resolveVideo, statusCheck } from '../utils';
 import { VideoResolvable } from 'src/types/Video';
 
-export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPAPI {
+export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInterface {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
 		super(userID, options);
 		this.isVIP().then((result) => result || console.info('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));

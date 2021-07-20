@@ -6,7 +6,7 @@ import { LocalSegment } from '../../types/segment/LocalSegment';
 import { UserStats } from '../../types/stats/UserStat';
 import { OverallStats } from '../../types/stats/OverallStats';
 import { defaultOptions } from '../../index';
-import { SponsorBlockAPI } from '../interfaces/user';
+import { SponsorBlockInterface } from '../interfaces/user';
 import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { VoteType } from '../../types/vote/VoteType';
 import { dbuserStatsToUserStats, resolveSegment, resolveVideo, statusCheck } from '../utils';
@@ -22,7 +22,7 @@ import { VideoResolvable } from '../../types/Video';
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
-export class SponsorBlock implements SponsorBlockAPI {
+export class SponsorBlock implements SponsorBlockInterface {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
 		// new URL('').
 		// let baseURL = options.baseURL;

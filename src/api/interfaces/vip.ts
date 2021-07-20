@@ -1,8 +1,8 @@
-import { Category } from 'src/types';
-import { VideoResolvable } from '../impl/utils';
-import { SponsorBlockAPI } from './user';
+import { Category } from '../../types';
+import { VideoResolvable } from '../../types/Video';
+import { SponsorBlockInterface } from './user';
 
-export interface SponsorBlockVIPAPI extends SponsorBlockAPI {
+export interface SponsorBlockVIPInterface extends SponsorBlockInterface {
 	// VIP Calls
 
 	/**

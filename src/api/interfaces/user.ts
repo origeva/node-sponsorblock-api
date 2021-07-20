@@ -1,8 +1,9 @@
-import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
-import { Category, LocalSegment, OverallStats, Segment, SortType, UserStats, VoteType } from 'src/types';
-import { SegmentInfo } from 'src/types/stats/SegmentInfo';
-import { UserIDPair } from 'src/types/user';
-import { SegmentResolvable, VideoResolvable } from '../impl/utils';
+import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
+import { Category, LocalSegment, OverallStats, Segment, SortType, UserStats, VoteType } from '../../types';
+import { SegmentInfo } from '../../types/stats/SegmentInfo';
+import { UserIDPair } from '../../types/user';
+import { VideoResolvable } from '../../types/Video';
+import { SegmentResolvable } from '../../types/segment/Segment';
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -11,7 +12,7 @@ import { SegmentResolvable, VideoResolvable } from '../impl/utils';
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
-export interface SponsorBlockAPI {
+export interface SponsorBlockInterface {
 	/**
 	 * The local user ID.
 	 */
