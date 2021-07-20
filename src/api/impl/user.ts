@@ -85,8 +85,6 @@ export class SponsorBlock implements SponsorBlockInterface {
 		return segments;
 	}
 
-	// async vote(segment: Segment, type: VoteType): Promise<void>;
-	// async vote(UUID: string, type: VoteType): Promise<void>;
 	async vote(segment: SegmentResolvable, type: VoteType): Promise<void> {
 		let UUID = resolveSegment(segment);
 		type = type === 'down' ? 0 : type === 'up' ? 1 : type === 'undo' ? 20 : type;
@@ -96,8 +94,6 @@ export class SponsorBlock implements SponsorBlockInterface {
 		// returns nothing (status code 200)
 	}
 
-	// async voteCategory(segment: Segment, category: Category): Promise<void>;
-	// async voteCategory(UUID: string, category: Category): Promise<void>;
 	async voteCategory(segment: SegmentResolvable, category: Category): Promise<void> {
 		let UUID = resolveSegment(segment);
 		let query = `?UUID=${UUID}&userID=${this.userID}&category=${category}`;
