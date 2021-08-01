@@ -15,7 +15,6 @@ import { statusCheck } from '../utils';
 import { SortType } from '../../types/stats/SortType';
 import { SegmentInfo } from '../../types/stats/SegmentInfo';
 import { UserIDPair } from '../../types/user';
-import { version } from '../../../package.json'
 
 /**
  * SponsorBlock API class, to be constructed with a userID.
@@ -52,7 +51,7 @@ export class SponsorBlock implements SponsorBlockAPI {
 
 	async postSegments(video: VideoResolvable, ...segments: LocalSegment[]): Promise<void> {
 		let videoID = resolveVideo(video);
-		let userAgent = `node_sponsorblock/${version}`
+		let userAgent = this.options.userAgent;
 		let dbSegments = segments.map((segment: LocalSegment) => {
 			// turn segments to objects the api accepts
 			let { startTime, endTime, category } = segment;
