@@ -1,9 +1,11 @@
 import { SponsorBlockOptions } from './types/SponsorBlockOptions';
+import { version } from '../package.json'
 
 export const defaultOptions: SponsorBlockOptions = {
 	baseURL: 'https://sponsor.ajay.app', // Base URL for the api endpoints
 	hashPrefixLength: 4, // Recommended prefix length to use for getting segments privately, to balance between privacy and more accurate results
 	service: 'YouTube',
+	userAgent: `node-sponsorblock/${version}`
 };
 
 export { SponsorBlock } from './api/impl/user';

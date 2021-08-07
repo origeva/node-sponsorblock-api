@@ -50,6 +50,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 
 	async postSegments(video: VideoResolvable, ...segments: LocalSegment[]): Promise<void> {
 		let videoID = resolveVideo(video);
+		let userAgent = this.options.userAgent;
 		let dbSegments = segments.map((segment: LocalSegment) => {
 			// turn segments to objects the api accepts
 			let { startTime, endTime, category } = segment;
@@ -57,7 +58,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 		});
 		let res = await fetch(`${this.options.baseURL}/api/skipSegments`, {
 			method: 'POST',
-			body: JSON.stringify({ videoID, userID: this.userID, segments: dbSegments }),
+			body: JSON.stringify({ videoID, userID: this.userID, segments: dbSegments, userAgent }),
 			headers: { 'Content-Type': 'application/json' },
 		});
 		statusCheck(res);

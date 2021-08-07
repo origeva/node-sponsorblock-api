@@ -20,4 +20,10 @@ export type SponsorBlockOptions = {
 	 * @default 'YouTube'
 	 */
 	service?: Service;
+
+	/**
+	 * UserAgent to use when submitting segments
+	 * @default 'node-sponsorblock/version'
+	 */
+	userAgent?: string;
 };
