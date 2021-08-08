@@ -14,10 +14,10 @@
 	},
 	"scripts": {
 		"dev": "nodemon",
-		"test": "mocha -t 3000 -r ts-node/register --recursive tests/**/*.ts",
-		"build": "npm run clean & echo Building... & tsc",
+		"test": "npm run build && (echo Testing... & mocha -t 3000 -r ts-node/register --recursive tests/**/*.ts)",
+		"build": "npm run clean && (echo Building... & tsc)",
 		"clean": "echo Cleaning... & rd /s /q lib & exit",
-		"prepublishOnly": "npm test && npm run build"
+		"prepublishOnly": "npm test"
 	},
 	"keywords": [
 		"sponsorblock-api",
