@@ -1,4 +1,4 @@
-import { SponsorBlock } from '../src';
+import { SponsorBlock } from '../lib';
 
 export const config = {
 	sponsorBlock: new SponsorBlock('test'),
