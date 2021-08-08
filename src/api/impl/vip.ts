@@ -1,10 +1,10 @@
 import fetch from 'cross-fetch';
 import { Category } from '../../types/segment/Category';
-import { SponsorBlockOptions } from 'src/types/SponsorBlockOptions';
+import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { SponsorBlock } from './user';
 import { SponsorBlockVIPInterface } from '../interfaces/vip';
 import { resolveVideo, statusCheck } from '../utils';
-import { VideoResolvable } from 'src/types/Video';
+import { VideoResolvable } from '../../types/Video';
 
 export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInterface {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
