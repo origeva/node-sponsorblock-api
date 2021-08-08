@@ -24,9 +24,6 @@ import { VideoResolvable } from '../../types/Video';
  */
 export class SponsorBlock implements SponsorBlockInterface {
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		// new URL('').
-		// let baseURL = options.baseURL;
-		// baseURL = baseURL?.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
 		if (options.baseURL?.endsWith('/')) options.baseURL = options.baseURL.slice(0, -1);
 		this.options = { ...defaultOptions, ...options };
 	}
@@ -51,7 +48,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async postSegments(video: VideoResolvable, ...segments: LocalSegment[]): Promise<void> {
 		let videoID = resolveVideo(video);
 		let userAgent = this.options.userAgent;
-		let dbSegments = segments.map((segment: LocalSegment) => {
+		let dbSegments = segments.map((segment) => {
 			// turn segments to objects the api accepts
 			let { startTime, endTime, category } = segment;
 			return { segment: [startTime, endTime], category };
