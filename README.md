@@ -6,7 +6,7 @@
 
 #### https://sponsor.ajay.app/
 
-Complete API documentation can be found [here](https://github.com/ajayyy/SponsorBlock/wiki/API-Docs).
+Complete API documentation can be found [here](https://wiki.sponsor.ajay.app/index.php/API_Docs).
 Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71) to abide the [license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License).
 
 This is a new library it will be updated frequently for small improvements.

@@ -8,7 +8,7 @@ import { SegmentResolvable } from '../../types/segment/Segment';
 /**
  * SponsorBlock API class, to be constructed with a userID.
  *
- * @description Complete API documentation can be found {@link https://github.com/ajayyy/SponsorBlock/wiki/API-Docs here}.
+ * @description Complete API documentation can be found {@link https://wiki.sponsor.ajay.app/index.php/API_Docs here}.
  * Please review the {@link https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71 attriution template}
  * to abide the {@link https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License license}.
  */
