@@ -13,8 +13,10 @@
 		"url": "https://github.com/origeva/node-sponsorblock-api"
 	},
 	"scripts": {
-		"test": "npm run build && (echo Testing... & mocha -t 3000 -r ts-node/register --recursive tests/**/*.ts)",
-		"build": "npm run clean && (echo Building... & tsc)",
+		"test": "echo Testing... & mocha -t 3000 -r ts-node/register --recursive tests/**/*.ts",
+		"pretest": "npm run build",
+		"build": "echo Building... & tsc",
+		"prebuild": "npm run clean",
 		"clean": "echo Cleaning... & rd /s /q lib & exit",
 		"prepublishOnly": "npm test"
 	},
