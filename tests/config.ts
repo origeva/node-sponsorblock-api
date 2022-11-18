@@ -1,6 +1,8 @@
 import { SponsorBlock } from '../lib';
 
 export const config = {
-	sponsorBlock: new SponsorBlock('test'),
+	sponsorBlock: new SponsorBlock('test', {
+		baseURL: 'https://sponsorblock.kavin.rocks'
+	}),
 	videoID: 'jiK2jmTVF3A',
 };
