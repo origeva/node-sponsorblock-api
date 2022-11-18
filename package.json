@@ -17,7 +17,7 @@
 		"build": "echo Building... & tsc",
 		"prebuild": "npm run clean",
 		"clean": "echo Cleaning... & rd /s /q lib & exit",
-		"prepublishOnly": "npm test"
+		"prepublishOnly": "npm run build & npm test"
 	},
 	"keywords": [
 		"sponsorblock-api",
