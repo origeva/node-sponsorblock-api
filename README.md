@@ -66,7 +66,7 @@ import { ResponseError } from 'sponsorblock-api'
 try {
 	await sponsorBlock.getSegments('videoID that will not be found');
 } catch (e) {
-	if (e instaceof ResponseError) {
+	if (e instanceof ResponseError) {
 		// SponsorBlock error handling
 	}
 }

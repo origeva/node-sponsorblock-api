@@ -32,22 +32,23 @@ export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCo
 	return userStats;
 }
 
+/** @throws {@link ResponseError} */
 export function statusCheck(res: Response) {
 	if (res.status !== 200) {
-		if (res.status === 400) {
-			throw new ResponseError(400, '[SponsorBlock] Bad Request (Your inputs are wrong/impossible)');
-		} else if (res.status == 403) {
-			throw new ResponseError(403, `[SponsorBlock] Rejected by auto moderator`);
-		} else if (res.status === 404) {
-			throw new ResponseError(404, '[SponsorBlock] Not Found');
-		} else if (res.status === 405) {
-			throw new ResponseError(405, '[SponsorBlock] Duplicate');
-		} else if (res.status === 409) {
-			throw new ResponseError(409, '[SponsorBlock] Duplicate');
-		} else if (res.status === 429) {
-			throw new ResponseError(429, '[SponsorBlock] Rate Limit (Too many for the same user or IP)');
+		/** @internal */
+		const makeErrMsg = (msg: string) => `[SponsorBlock] ${msg}`;
+		const msgErrors: Record<number, string> = {
+			400: 'Bad Request (Your inputs are wrong/impossible)',
+			403: 'Rejected by auto moderator',
+			404: 'Not Found',
+			405: 'Duplicate',
+			409: 'Duplicate',
+			429: 'Rate Limit (Too many for the same user or IP)'
+		}
+		if (msgErrors[res.status] !== undefined) {
+			throw new ResponseError(res.status, makeErrMsg(msgErrors[res.status]));
 		} else {
-			throw new ResponseError(res.status, `[SponsorBlock] Status code not 200 (${res.status})`);
+			throw new ResponseError(res.status, makeErrMsg(`Status code not 200 (${res.status})`));
 		}
 	}
 }
