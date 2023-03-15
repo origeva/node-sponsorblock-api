@@ -11,5 +11,6 @@ export { SponsorBlock } from './api/impl/user';
 export { SponsorBlockVIP } from './api/impl/vip';
 export { SponsorBlockAdmin } from './api/impl/admin';
 export { ResponseError } from './errors/ResponseError';
+export { Constants } from './constants'
 export * from './utils';
 export * from './types';
