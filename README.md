@@ -9,9 +9,6 @@
 Complete API documentation can be found [here](https://wiki.sponsor.ajay.app/index.php/API_Docs).
 Please review the [attriution template](https://gist.github.com/ajayyy/4b27dfc66e33941a45aeaadccb51de71) to abide the [license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License).
 
-This is a new library it will be updated frequently for small improvements.
-Function signatures may change due to API updates.
-
 ##### Usage:
 
 ###### JavaScript:
@@ -28,12 +25,24 @@ sponsorBlock.getSegments(videoID, ['intro', 'outro']).then((segments) => {
 ###### TypeScript:
 
 ```typescript
-import { SponsorBlock } from 'sponsorblock-api';
+import { SponsorBlock, Category } from 'sponsorblock-api';
 const sponsorBlock = new SponsorBlock(userID); // userID should be a locally generated uuid, save the id for future tracking of stats
 
-sponsorBlock.getSegments(videoID, ['sponsor', 'selfpromo']).then((segments) => {
+const categories: Category[] = ['sponsor', 'selfpromo']
+sponsorBlock.getSegments(videoID, categories).then((segments) => {
 	console.log(segments);
 });
+```
+
+###### Some constants and types are exported for ease of use:
+
+```typescript
+import { SponsorBlock, Constants, PrefixRange } from 'sponsorblock-api'
+
+const prefixLength: PrefixRange = 4
+const sponsorBlock = new SponsorBlock(userID, { hashPrefixLength: prefixLength })
+
+sponsorBlock.getSegmentsPrivately(videoID, Constants.ALL_CATEGORIES)
 ```
 
 ##### Notice:
