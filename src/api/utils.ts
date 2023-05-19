@@ -33,7 +33,7 @@ export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCo
 }
 
 /** @throws {@link ResponseError} */
-export function statusCheck(res: Response) {
+export function statusCheck(res: any) {
 	if (res.status !== 200) {
 		/** @internal */
 		const makeErrMsg = (msg: string) => `[SponsorBlock] ${msg}`;
