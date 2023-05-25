@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch';
+import axios from 'axios';
 import { Category } from '../../types/segment/Category';
 import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { SponsorBlock } from './user';
@@ -14,65 +14,46 @@ export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInte
 
 	async blockSubmissionsOfCategory(video: VideoResolvable, ...categories: Category[]): Promise<void> {
 		let videoID = resolveVideo(video);
-		let res = await fetch(`${this.options.baseURL}/api/noSegments`, {
-			method: 'POST',
-			body: JSON.stringify({ videoID, userID: this.userID, categories }),
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.post('/api/noSegments', { videoID, userID: this.userID, categories }, { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async shadowBan(publicUserID: string, hideOldSubmissions?: boolean): Promise<void> {
-		let res = await fetch(
-			`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=true&unHideOldSubmissions=${hideOldSubmissions ?? false}`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-			}
-		);
+		let res = await axios.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, unHideOldSubmissions: hideOldSubmissions ?? false }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async removeShadowBan(publicUserID: string): Promise<void> {
-		let res = await fetch(`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=false`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: false }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async hideOldSubmissions(publicUserID: string): Promise<void> {
-		let res = await fetch(`${this.options.baseURL}/api/shadowBanUser?userID=${publicUserID}&adminUserID=${this.userID}&enabled=true&unHideOldSubmissions=true`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.post('/api/shadowBanUser' , null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: true, unHideOldSubmissions: true }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async warnUser(publicUserID: string, reason: string = '', enabled?: boolean): Promise<void> {
-		let res = await fetch(`${this.options.baseURL}/api/warnUser`, {
-			method: 'POST',
-			body: JSON.stringify({ issuerUserID: this.userID, userID: publicUserID, enabled, reason }),
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.post('/api/warnUser', { issuerUserID: this.userID, userID: publicUserID, enabled, reason }, { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async clearCache(video: VideoResolvable): Promise<void> {
 		let videoID = resolveVideo(video);
-		let res = await fetch(`${this.options.baseURL}/api/clearCache?videoID=${videoID}&userID=${this.userID}`);
+		let res = await axios.get('/api/clearCache?videoID', { params: { videoID, userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
+		// let res = await fetch(`${this.options.baseURL}/api/clearCache?videoID=${videoID}&userID=${this.userID}`);
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async purgeAllSegments(video: VideoResolvable): Promise<void> {
 		let videoID = resolveVideo(video);
-		let res = await fetch(`${this.options.baseURL}/api/purgeAllSegments?videoID=${videoID}&userID=${this.userID}`);
+		let res = await axios.get('/api/purgeAllSegments', { params: { videoID, userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}

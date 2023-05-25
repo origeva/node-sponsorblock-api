@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch';
+import axios from 'axios'
 import crypto from 'crypto';
 import { Segment, SegmentResolvable } from '../../types/segment/Segment';
 import { Category } from '../../types/segment/Category';
@@ -32,13 +32,9 @@ export class SponsorBlock implements SponsorBlockInterface {
 
 	async getSegments(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
-		let query = `?videoID=${videoID}&service=${this.options.service}&categories=${JSON.stringify(categories)}`;
-		if (requiredSegments.length > 0) {
-			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`;
-		}
-		let res = await fetch(`${this.options.baseURL}/api/skipSegments${query}`);
+		let res = await axios.get('/api/skipSegments', { params: { videoID, service: this.options.service, categories: JSON.stringify(categories), ...(requiredSegments.length && { requiredSegments }) }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let data = (await res.json()) as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
+		let data = res.data as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
 		let segments = data.map(({ UUID, segment, category, videoDuration }) => {
 			return { UUID, startTime: segment[0], endTime: segment[1], category, videoDuration };
 		});
@@ -53,11 +49,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 			let { startTime, endTime, category } = segment;
 			return { segment: [startTime, endTime], category };
 		});
-		let res = await fetch(`${this.options.baseURL}/api/skipSegments`, {
-			method: 'POST',
-			body: JSON.stringify({ videoID, userID: this.userID, segments: dbSegments, userAgent }),
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.post('/api/skipSegments', { videoID, userID: this.userID, segments: dbSegments, userAgent }, { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
@@ -69,10 +61,10 @@ export class SponsorBlock implements SponsorBlockInterface {
 		if (requiredSegments.length > 0) {
 			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`;
 		}
-		let res = await fetch(`${this.options.baseURL}/api/skipSegments/${hashPrefix}${query}`);
+		let res = await axios.get(`/api/skipSegments/${hashPrefix}`, { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		let filtered = (
-			(await res.json()) as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[] }[]
+			res.data as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[] }[]
 		).find((video) => video.videoID === videoID);
 		if (!filtered) {
 			throw new Error('[SponsorBlock] Not found within returned videos');
@@ -86,84 +78,76 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async vote(segment: SegmentResolvable, type: VoteType): Promise<void> {
 		let UUID = resolveSegment(segment);
 		type = type === 'down' ? 0 : type === 'up' ? 1 : type === 'undo' ? 20 : type;
-		let query = `?UUID=${UUID}&userID=${this.userID}&type=${type}`;
-		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
+		let res = await axios.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, type }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async voteCategory(segment: SegmentResolvable, category: Category): Promise<void> {
 		let UUID = resolveSegment(segment);
-		let query = `?UUID=${UUID}&userID=${this.userID}&category=${category}`;
-		let res = await fetch(`${this.options.baseURL}/api/voteOnSponsorTime${query}`);
+		let res = await axios.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, category }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async viewed(segment: SegmentResolvable): Promise<void> {
 		let UUID = resolveSegment(segment);
-		let res = await fetch(`${this.options.baseURL}/api/viewedVideoSponsorTime?UUID=${UUID}`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.get('/api/viewedVideoSponsorTime', { params: { UUID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async getViews(): Promise<number> {
-		let res = await fetch(`${this.options.baseURL}/api/getViewsForUser?userID=${this.userID}`);
+		let res = await axios.get('/api/getViewsForUser', { params: { userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let data = await res.json();
+		let data = res.data;
 		return data.viewCount;
 	}
 
 	async getTimeSaved(): Promise<number> {
-		let res = await fetch(`${this.options.baseURL}/api/getSavedTimeForUser?userID=${this.userID}`);
+		let res = await axios.get('/api/getSavedTimeForUser', { params: { userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let data = await res.json();
+		let data = res.data;
 		return data.timeSaved;
 	}
 
 	async setUsername(username: string): Promise<void> {
-		let res = await fetch(`${this.options.baseURL}/api/setUsername?userID=${this.userID}&username=${username}`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		let res = await axios.get('/api/setUsername', { params: { userID: this.userID, username }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async getUsername(): Promise<string> {
-		let res = await fetch(`${this.options.baseURL}/api/getUsername?userID=${this.userID}`);
+		let res = await axios.get('/api/getUsername', { params: { userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let data = await res.json();
+		let data = res.data;
 		return data.userName;
 	}
 
 	async getTopUsers(sortType: SortType): Promise<UserStats[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
-		let res = await fetch(`${this.options.baseURL}/api/getTopUsers?sortType=${sortType}`);
+		let res = await axios.get('/api/getTopUsers', { params: { sortType }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return dbuserStatsToUserStats(await res.json());
+		return dbuserStatsToUserStats(res.data);
 	}
 
 	async getOverallStats(): Promise<OverallStats> {
-		let res = await fetch(`${this.options.baseURL}/api/getTotalStats`);
+		let res = await axios.get('/api/getTotalStats', { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return await res.json();
+		return res.data;
 	}
 
 	async getDaysSaved(): Promise<number> {
-		let res = await fetch(`${this.options.baseURL}/api/getDaysSavedFormatted`);
+		let res = await axios.get('/api/getDaysSavedFormatted', { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let data = await res.json();
+		let data = res.data;
 		return parseFloat(data.daysSaved);
 	}
 
 	async isVIP(): Promise<boolean> {
-		let res = await fetch(`${this.options.baseURL}/api/isUserVIP?userID=${this.userID}`);
+		let res = await axios.get('/api/isUserVIP', { params: { userID: this.userID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return (await res.json()).vip;
+		return res.data.vip;
 	}
 
 	getHashedUserID(): string {
@@ -177,31 +161,30 @@ export class SponsorBlock implements SponsorBlockInterface {
 
 	async getSegmentInfo(segments: SegmentResolvable[]): Promise<SegmentInfo[]> {
 		let UUIDs = segments.map((segment) => resolveSegment(segment));
-		let query = `?UUIDs=${JSON.stringify(UUIDs)}`;
-		let res = await fetch(`${this.options.baseURL}/api/segmentInfo${query}`);
+		let res = await axios.get('/api/segmentInfo', { params: { UUIDs: JSON.stringify(UUIDs) }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return await res.json();
+		return res.data;
 	}
 
 	async getUserID(username: string, exact: boolean = false): Promise<UserIDPair[]> {
-		let res = await fetch(`${this.options.baseURL}/api/userID?username=${username}&exact=${exact.toString()}`);
+		let res = await axios.get('/api/userID', { params: { username }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return await res.json();
+		return res.data;
 	}
 
 	async getLockCategories(video: VideoResolvable): Promise<Category[]> {
 		let videoID = resolveVideo(video);
-		let res = await fetch(`${this.options.baseURL}/api/lockCategories?videoID=${videoID}`);
+		let res = await axios.get('/api/lockCategories', { params: { videoID }, baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		return (await res.json()).categories;
+		return res.data.categories;
 	}
 
 	async getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let res = await fetch(`${this.options.baseURL}/api/skipSegments/${hashPrefix}`);
+		let res = await axios.get(`/api/skipSegments/${hashPrefix}`, { baseURL: this.options.baseURL, validateStatus: null })
 		statusCheck(res);
-		let filtered = ((await res.json()) as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
+		let filtered = (res.data as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
 		if (!filtered) {
 			throw new Error('[SponsorBlock] Not found within returned videos');
 		}
