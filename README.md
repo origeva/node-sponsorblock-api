@@ -2,7 +2,7 @@
 
 ### Node module wrapper for SponsorBlock web API.
 
-#### Now works with the browser's runtime.
+#### Using Axios for the HTTP client
 
 #### https://sponsor.ajay.app/
 
