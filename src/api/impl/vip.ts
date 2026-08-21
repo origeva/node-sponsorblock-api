@@ -12,47 +12,47 @@ export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInte
 	}
 
 	async blockSubmissionsOfCategory(video: VideoResolvable, ...categories: Category[]): Promise<void> {
-		let videoID = resolveVideo(video);
-		let res = await this.http.post('/api/noSegments', { videoID, userID: this.userID, categories })
+		const videoID = resolveVideo(video);
+		const res = await this.http.post('/api/noSegments', { videoID, userID: this.userID, categories })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async shadowBan(publicUserID: string, hideOldSubmissions?: boolean): Promise<void> {
-		let res = await this.http.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, unHideOldSubmissions: hideOldSubmissions ?? false } })
+		const res = await this.http.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, unHideOldSubmissions: hideOldSubmissions ?? false } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async removeShadowBan(publicUserID: string): Promise<void> {
-		let res = await this.http.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: false } })
+		const res = await this.http.post('/api/shadowBanUser', null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: false } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async hideOldSubmissions(publicUserID: string): Promise<void> {
-		let res = await this.http.post('/api/shadowBanUser' , null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: true, unHideOldSubmissions: true } })
+		const res = await this.http.post('/api/shadowBanUser' , null, { params: { userID: publicUserID, adminUserID: this.userID, enabled: true, unHideOldSubmissions: true } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async warnUser(publicUserID: string, reason: string = '', enabled?: boolean): Promise<void> {
-		let res = await this.http.post('/api/warnUser', { issuerUserID: this.userID, userID: publicUserID, enabled, reason })
+		const res = await this.http.post('/api/warnUser', { issuerUserID: this.userID, userID: publicUserID, enabled, reason })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async clearCache(video: VideoResolvable): Promise<void> {
-		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/clearCache?videoID', { params: { videoID, userID: this.userID } })
+		const videoID = resolveVideo(video);
+		const res = await this.http.get('/api/clearCache?videoID', { params: { videoID, userID: this.userID } })
 		// let res = await fetch(`${this.options.baseURL}/api/clearCache?videoID=${videoID}&userID=${this.userID}`);
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async purgeAllSegments(video: VideoResolvable): Promise<void> {
-		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/purgeAllSegments', { params: { videoID, userID: this.userID } })
+		const videoID = resolveVideo(video);
+		const res = await this.http.get('/api/purgeAllSegments', { params: { videoID, userID: this.userID } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}

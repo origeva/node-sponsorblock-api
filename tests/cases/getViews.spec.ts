@@ -4,7 +4,7 @@ const { sponsorBlock } = config;
 
 describe.skip('getViews', () => {
 	it('should return at least 0', async () => {
-		let result = await sponsorBlock.getViews();
+		const result = await sponsorBlock.getViews();
 		assert.isAtLeast(result, 0);
 	});
 });

@@ -24,9 +24,9 @@ export function resolveVideo(resolvable: VideoResolvable): VideoID {
 }
 
 export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCounts: number[]; totalSubmissions: number[]; minutesSaved: number[] }): UserStats[] {
-	let userStats: UserStats[] = [];
+	const userStats: UserStats[] = [];
 	for (let i = 0; i < dbuserStat.userNames[0].length; i++) {
-		let { userNames, viewCounts, totalSubmissions, minutesSaved } = dbuserStat;
+		const { userNames, viewCounts, totalSubmissions, minutesSaved } = dbuserStat;
 		userStats.push({ userName: userNames[i], viewCounts: viewCounts[i], totalSubmissions: totalSubmissions[i], minutesSaved: minutesSaved[i] });
 	}
 	return userStats;

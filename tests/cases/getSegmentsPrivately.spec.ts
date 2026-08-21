@@ -6,7 +6,7 @@ const { sponsorBlock, videoID } = config;
 
 describe('getSegmentsPrivately', () => {
 	it('should return a segment array', async () => {
-		let segments = await sponsorBlock.getSegmentsPrivately(videoID);
+		const segments = await sponsorBlock.getSegmentsPrivately(videoID);
 		assert.ok(segments.every(isSegment), `sponsorBlock.getSegmentsPrivately('${videoID}'): segments is not of type Segment[]`);
 	});
 	// assert.equal(video.segments[0].category, 'sponsor', `sponsorBlock.getSegmentsPrivately('${videoID}'): Default category from API is not "sponsor"`);

@@ -7,7 +7,7 @@ const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(
  * @returns The video ID extracted from the input URL.
  */
 export function extractVideoID(youtubeURL: string): string | null {
-	let matchArray = youtubeURL.match(regex);
+	const matchArray = youtubeURL.match(regex);
 	return matchArray && matchArray[5];
 }
 

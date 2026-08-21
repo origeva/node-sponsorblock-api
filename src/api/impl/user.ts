@@ -34,121 +34,121 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async getSegments(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
-		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/skipSegments', { params: { videoID, service: this.options.service, categories: JSON.stringify(categories), ...(requiredSegments.length && { requiredSegments }) } })
+		const videoID = resolveVideo(video);
+		const res = await this.http.get('/api/skipSegments', { params: { videoID, service: this.options.service, categories: JSON.stringify(categories), ...(requiredSegments.length && { requiredSegments }) } })
 		statusCheck(res);
-		let data = res.data as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
-		let segments = data.map(({ UUID, segment, category, videoDuration }) => {
+		const data = res.data as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
+		const segments = data.map(({ UUID, segment, category, videoDuration }) => {
 			return { UUID, startTime: segment[0], endTime: segment[1], category, videoDuration };
 		});
 		return segments;
 	}
 
 	async postSegments(video: VideoResolvable, ...segments: LocalSegment[]): Promise<void> {
-		let videoID = resolveVideo(video);
-		let userAgent = this.options.userAgent;
-		let dbSegments = segments.map((segment) => {
+		const videoID = resolveVideo(video);
+		const userAgent = this.options.userAgent;
+		const dbSegments = segments.map((segment) => {
 			// turn segments to objects the api accepts
-			let { startTime, endTime, category } = segment;
+			const { startTime, endTime, category } = segment;
 			return { segment: [startTime, endTime], category };
 		});
-		let res = await this.http.post('/api/skipSegments', { videoID, userID: this.userID, segments: dbSegments, userAgent })
+		const res = await this.http.post('/api/skipSegments', { videoID, userID: this.userID, segments: dbSegments, userAgent })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
-		let videoID = resolveVideo(video);
-		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
+		const videoID = resolveVideo(video);
+		const hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
 		let query = `?service=${this.options.service}&categories=${JSON.stringify(categories)}`;
 		if (requiredSegments.length > 0) {
 			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`;
 		}
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		const res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
 		statusCheck(res);
-		let filtered = (
+		const filtered = (
 			res.data as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[] }[]
 		).find((video) => video.videoID === videoID);
 		if (!filtered) {
 			throw new Error('[SponsorBlock] Not found within returned videos');
 		}
-		let segments = filtered.segments.map((val) => {
+		const segments = filtered.segments.map((val) => {
 			return { UUID: val.UUID, startTime: val.segment[0], endTime: val.segment[1], category: val.category, videoDuration: val.videoDuration };
 		});
 		return segments;
 	}
 
 	async vote(segment: SegmentResolvable, type: VoteType): Promise<void> {
-		let UUID = resolveSegment(segment);
+		const UUID = resolveSegment(segment);
 		type = type === 'down' ? 0 : type === 'up' ? 1 : type === 'undo' ? 20 : type;
-		let res = await this.http.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, type } })
+		const res = await this.http.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, type } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async voteCategory(segment: SegmentResolvable, category: Category): Promise<void> {
-		let UUID = resolveSegment(segment);
-		let res = await this.http.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, category } })
+		const UUID = resolveSegment(segment);
+		const res = await this.http.get('/api/voteOnSponsorTime', { params: { UUID, userID: this.userID, category } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async viewed(segment: SegmentResolvable): Promise<void> {
-		let UUID = resolveSegment(segment);
-		let res = await this.http.get('/api/viewedVideoSponsorTime', { params: { UUID } })
+		const UUID = resolveSegment(segment);
+		const res = await this.http.get('/api/viewedVideoSponsorTime', { params: { UUID } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async getViews(): Promise<number> {
-		let res = await this.http.get('/api/getViewsForUser', { params: { userID: this.userID } })
+		const res = await this.http.get('/api/getViewsForUser', { params: { userID: this.userID } })
 		statusCheck(res);
-		let data = res.data;
+		const data = res.data;
 		return data.viewCount;
 	}
 
 	async getTimeSaved(): Promise<number> {
-		let res = await this.http.get('/api/getSavedTimeForUser', { params: { userID: this.userID } })
+		const res = await this.http.get('/api/getSavedTimeForUser', { params: { userID: this.userID } })
 		statusCheck(res);
-		let data = res.data;
+		const data = res.data;
 		return data.timeSaved;
 	}
 
 	async setUsername(username: string): Promise<void> {
-		let res = await this.http.get('/api/setUsername', { params: { userID: this.userID, username } })
+		const res = await this.http.get('/api/setUsername', { params: { userID: this.userID, username } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async getUsername(): Promise<string> {
-		let res = await this.http.get('/api/getUsername', { params: { userID: this.userID } })
+		const res = await this.http.get('/api/getUsername', { params: { userID: this.userID } })
 		statusCheck(res);
-		let data = res.data;
+		const data = res.data;
 		return data.userName;
 	}
 
 	async getTopUsers(sortType: SortType): Promise<UserStats[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
-		let res = await this.http.get('/api/getTopUsers', { params: { sortType } })
+		const res = await this.http.get('/api/getTopUsers', { params: { sortType } })
 		statusCheck(res);
 		return dbuserStatsToUserStats(res.data);
 	}
 
 	async getOverallStats(): Promise<OverallStats> {
-		let res = await this.http.get('/api/getTotalStats')
+		const res = await this.http.get('/api/getTotalStats')
 		statusCheck(res);
 		return res.data;
 	}
 
 	async getDaysSaved(): Promise<number> {
-		let res = await this.http.get('/api/getDaysSavedFormatted')
+		const res = await this.http.get('/api/getDaysSavedFormatted')
 		statusCheck(res);
-		let data = res.data;
+		const data = res.data;
 		return parseFloat(data.daysSaved);
 	}
 
 	async isVIP(): Promise<boolean> {
-		let res = await this.http.get('/api/isUserVIP', { params: { userID: this.userID }})
+		const res = await this.http.get('/api/isUserVIP', { params: { userID: this.userID }})
 		statusCheck(res);
 		return res.data.vip;
 	}
@@ -163,31 +163,31 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async getSegmentInfo(segments: SegmentResolvable[]): Promise<SegmentInfo[]> {
-		let UUIDs = segments.map((segment) => resolveSegment(segment));
-		let res = await this.http.get('/api/segmentInfo', { params: { UUIDs: JSON.stringify(UUIDs) } })
+		const UUIDs = segments.map((segment) => resolveSegment(segment));
+		const res = await this.http.get('/api/segmentInfo', { params: { UUIDs: JSON.stringify(UUIDs) } })
 		statusCheck(res);
 		return res.data;
 	}
 
 	async getUserID(username: string, exact: boolean = false): Promise<UserIDPair[]> {
-		let res = await this.http.get('/api/userID', { params: { username } })
+		const res = await this.http.get('/api/userID', { params: { username } })
 		statusCheck(res);
 		return res.data;
 	}
 
 	async getLockCategories(video: VideoResolvable): Promise<Category[]> {
-		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/lockCategories', { params: { videoID } })
+		const videoID = resolveVideo(video);
+		const res = await this.http.get('/api/lockCategories', { params: { videoID } })
 		statusCheck(res);
 		return res.data.categories;
 	}
 
 	async getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]> {
-		let videoID = resolveVideo(video);
-		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		const videoID = resolveVideo(video);
+		const hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
+		const res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
 		statusCheck(res);
-		let filtered = (res.data as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
+		const filtered = (res.data as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
 		if (!filtered) {
 			throw new Error('[SponsorBlock] Not found within returned videos');
 		}
