@@ -181,7 +181,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async getUserID(username: string, exact: boolean = false): Promise<UserIDPair[]> {
-		let res = await this.http.get('/api/userID', { params: { username } })
+		let res = await this.http.get('/api/userID', { params: { username, exact } })
 		statusCheck(res);
 		return res.data;
 	}
