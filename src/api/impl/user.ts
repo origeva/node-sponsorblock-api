@@ -124,7 +124,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async setUsername(username: string): Promise<void> {
-		let res = await this.http.get('/api/setUsername', { params: { userID: this.userID, username } })
+		let res = await this.http.post('/api/setUsername', null, { params: { userID: this.userID, username } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}

@@ -44,15 +44,14 @@ export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInte
 
 	async clearCache(video: VideoResolvable): Promise<void> {
 		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/clearCache?videoID', { params: { videoID, userID: this.userID } })
-		// let res = await fetch(`${this.options.baseURL}/api/clearCache?videoID=${videoID}&userID=${this.userID}`);
+		let res = await this.http.post('/api/clearCache', { videoID, userID: this.userID })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
 
 	async purgeAllSegments(video: VideoResolvable): Promise<void> {
 		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/purgeAllSegments', { params: { videoID, userID: this.userID } })
+		let res = await this.http.post('/api/purgeAllSegments', { videoID, userID: this.userID })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
