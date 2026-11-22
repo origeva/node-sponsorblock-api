@@ -34,21 +34,39 @@ export function dbuserStatsToUserStats(dbuserStat: { userNames: string[]; viewCo
 
 /** @throws {@link ResponseError} */
 export function statusCheck(res: any) {
-	if (res.status !== 200) {
-		/** @internal */
-		const makeErrMsg = (msg: string) => `[SponsorBlock] ${msg}`;
-		const msgErrors: Record<number, string> = {
-			400: 'Bad Request (Your inputs are wrong/impossible)',
-			403: 'Rejected by auto moderator',
-			404: 'Not Found',
-			405: 'Duplicate',
-			409: 'Duplicate',
-			429: 'Rate Limit (Too many for the same user or IP)'
-		}
-		if (msgErrors[res.status] !== undefined) {
-			throw new ResponseError(res.status, makeErrMsg(msgErrors[res.status]));
-		} else {
-			throw new ResponseError(res.status, makeErrMsg(`Status code not 200 (${res.status})`));
-		}
+	if (typeof res.status === 'number' && res.status >= 200 && res.status < 300) return;
+
+	/** @internal */
+	const makeErrMsg = (msg: string) => `[SponsorBlock] ${msg}`;
+	const msgErrors: Record<number, string> = {
+		400: 'Bad Request (Your inputs are wrong/impossible)',
+		403: 'Rejected by auto moderator',
+		404: 'Not Found',
+		405: 'Duplicate',
+		409: 'Duplicate',
+		429: 'Rate Limit (Too many for the same user or IP)',
+	};
+	const apiMessage = extractApiErrorMessage(res.data);
+	const fallback = msgErrors[res.status] ?? `Status code not 200 (${res.status})`;
+	throw new ResponseError(res.status, makeErrMsg(apiMessage ?? fallback));
+}
+
+/** @internal */
+function extractApiErrorMessage(data: any): string | undefined {
+	if (typeof data === 'string') {
+		const message = data.trim();
+		return message && !message.startsWith('<') ? message : undefined;
 	}
+	if (Array.isArray(data)) {
+		const messages = data
+			.filter((entry): entry is string => typeof entry === 'string')
+			.map((entry) => entry.trim())
+			.filter(Boolean);
+		return messages.length > 0 ? messages.join('; ') : undefined;
+	}
+	if (data && typeof data === 'object') {
+		const message = data.message ?? data.error;
+		if (typeof message === 'string' && message.trim()) return message.trim();
+	}
+	return undefined;
 }
