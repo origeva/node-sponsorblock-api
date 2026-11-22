@@ -194,7 +194,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		let res = await this.http.get(`/api/lockCategories/${hashPrefix}`)
 		statusCheck(res);
 		let filtered = (res.data as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
 		if (!filtered) {
