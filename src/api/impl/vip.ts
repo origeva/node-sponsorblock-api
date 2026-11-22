@@ -1,16 +1,10 @@
 import { Category } from '../../types/segment/Category';
-import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { SponsorBlock } from './user';
 import { SponsorBlockVIPInterface } from '../interfaces/vip';
 import { resolveVideo, statusCheck } from '../utils';
 import { VideoResolvable } from '../../types/Video';
 
 export class SponsorBlockVIP extends SponsorBlock implements SponsorBlockVIPInterface {
-	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		super(userID, options);
-		this.isVIP().then((result) => result || console.info('\x1b[31m%s\x1b[0m', 'User is not VIP, VIP methods will be unauthorized'));
-	}
-
 	async blockSubmissionsOfCategory(video: VideoResolvable, ...categories: Category[]): Promise<void> {
 		let videoID = resolveVideo(video);
 		let res = await this.http.post('/api/noSegments', { videoID, userID: this.userID, categories })

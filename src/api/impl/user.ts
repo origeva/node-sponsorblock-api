@@ -29,8 +29,9 @@ export class SponsorBlock implements SponsorBlockInterface {
 	private hashedUserID: string;
 	
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		if (options.baseURL?.endsWith('/')) options.baseURL = options.baseURL.slice(0, -1);
-		this.options = { ...defaultOptions, ...options };
+		const providedOptions = { ...options };
+		if (providedOptions.baseURL?.endsWith('/')) providedOptions.baseURL = providedOptions.baseURL.slice(0, -1);
+		this.options = { ...defaultOptions, ...providedOptions };
 		this.http = axios.create({ baseURL: this.options.baseURL, validateStatus: null });
 	}
 
