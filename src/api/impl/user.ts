@@ -9,7 +9,8 @@ import { defaultOptions } from '../../index';
 import { SponsorBlockInterface } from '../interfaces/user';
 import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { VoteType } from '../../types/vote/VoteType';
-import { dbuserStatsToUserStats, resolveSegment, resolveVideo, statusCheck } from '../utils';
+import { resolveSegment, resolveVideo, statusCheck } from '../utils';
+import { ResponseError } from '../../errors/ResponseError';
 import { SortType } from '../../types/stats/SortType';
 import { SegmentInfo } from '../../types/stats/SegmentInfo';
 import { UserIDPair } from '../../types/user';
@@ -136,11 +137,12 @@ export class SponsorBlock implements SponsorBlockInterface {
 		return data.userName;
 	}
 
+	/**
+	 * @deprecated The SponsorBlock API disables `/api/getTopUsers`; this always throws a {@link ResponseError} with status 404.
+	 */
 	async getTopUsers(sortType: SortType): Promise<UserStats[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
-		let res = await this.http.get('/api/getTopUsers', { params: { sortType } })
-		statusCheck(res);
-		return dbuserStatsToUserStats(res.data);
+		throw new ResponseError(404, `[SponsorBlock] getTopUsers is unavailable: the SponsorBlock API disables /api/getTopUsers and always returns 404 (sortType ${sortType})`);
 	}
 
 	async getOverallStats(): Promise<OverallStats> {
