@@ -35,7 +35,14 @@ export class SponsorBlock implements SponsorBlockInterface {
 
 	async getSegments(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/skipSegments', { params: { videoID, service: this.options.service, categories: JSON.stringify(categories), ...(requiredSegments.length && { requiredSegments }) } })
+		let res = await this.http.get('/api/skipSegments', {
+			params: {
+				videoID,
+				service: this.options.service,
+				categories: JSON.stringify(categories),
+				...(requiredSegments.length > 0 ? { requiredSegments: JSON.stringify(requiredSegments) } : {}),
+			},
+		});
 		statusCheck(res);
 		let data = res.data as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
 		let segments = data.map(({ UUID, segment, category, videoDuration }) => {
@@ -60,11 +67,13 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let query = `?service=${this.options.service}&categories=${JSON.stringify(categories)}`;
-		if (requiredSegments.length > 0) {
-			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`;
-		}
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`, {
+			params: {
+				service: this.options.service,
+				categories: JSON.stringify(categories),
+				...(requiredSegments.length > 0 ? { requiredSegments: JSON.stringify(requiredSegments) } : {}),
+			},
+		});
 		statusCheck(res);
 		let filtered = (
 			res.data as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[] }[]
