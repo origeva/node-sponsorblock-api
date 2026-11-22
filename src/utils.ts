@@ -1,16 +1,45 @@
-const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
-
 /**
  * Extracts the video ID from the full URL.
- * this function assumes the input is surely a YouTube video URL, otherwise may return null or a part of the input.
+ * Supports watch, shorts, live, embed, v and youtu.be URLs, with or without
+ * a protocol, including music.youtube.com and query parameters in any order.
  * @param youtubeURL The complete YouTube URL of a video.
- * @returns The video ID extracted from the input URL.
+ * @returns The video ID extracted from the input URL, or null if it is not a YouTube video URL.
  */
 export function extractVideoID(youtubeURL: string): string | null {
-	let matchArray = youtubeURL.match(regex);
-	return matchArray && matchArray[5];
+	let url: URL;
+	try {
+		const trimmed = youtubeURL.trim();
+		if (!trimmed) return null;
+		const withProtocol = trimmed.startsWith('//')
+			? `https:${trimmed}`
+			: /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+			? trimmed
+			: `https://${trimmed}`;
+		url = new URL(withProtocol);
+	} catch {
+		return null;
+	}
+	if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+
+	const hostname = url.hostname.toLowerCase();
+	const isShortHost = hostname === 'youtu.be';
+	const isYoutubeHost = hostname === 'youtube.com' || hostname.endsWith('.youtube.com');
+	if (!isShortHost && !isYoutubeHost) return null;
+
+	let videoID: string | null = null;
+	if (isShortHost) {
+		videoID = url.pathname.split('/').filter(Boolean)[0] ?? null;
+	} else {
+		const path = url.pathname.split('/').filter(Boolean);
+		if (path[0] === 'watch') {
+			videoID = url.searchParams.get('v');
+		} else if (path[0] === 'shorts' || path[0] === 'live' || path[0] === 'embed' || path[0] === 'v') {
+			videoID = path[1] ?? null;
+		}
+	}
+	return videoID && /^[\w-]+$/.test(videoID) ? videoID : null;
 }
 
 export function validateYoutubeURL(youtubeURL: string): boolean {
-	return regex.test(youtubeURL);
+	return extractVideoID(youtubeURL) !== null;
 }

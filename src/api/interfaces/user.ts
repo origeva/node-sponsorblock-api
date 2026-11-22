@@ -89,6 +89,7 @@ export interface SponsorBlockInterface {
 
 	/**
 	 * Get the top user stats
+	 * @deprecated The SponsorBlock API disables `/api/getTopUsers`; this always rejects with a {@link ResponseError} (status 404).
 	 * @param sortType
 	 */
 	getTopUsers(sortType: SortType): Promise<UserStats[]>;

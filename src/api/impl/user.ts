@@ -9,7 +9,8 @@ import { defaultOptions } from '../../index';
 import { SponsorBlockInterface } from '../interfaces/user';
 import { SponsorBlockOptions } from '../../types/SponsorBlockOptions';
 import { VoteType } from '../../types/vote/VoteType';
-import { dbuserStatsToUserStats, resolveSegment, resolveVideo, statusCheck } from '../utils';
+import { resolveSegment, resolveVideo, statusCheck } from '../utils';
+import { ResponseError } from '../../errors/ResponseError';
 import { SortType } from '../../types/stats/SortType';
 import { SegmentInfo } from '../../types/stats/SegmentInfo';
 import { UserIDPair } from '../../types/user';
@@ -28,14 +29,22 @@ export class SponsorBlock implements SponsorBlockInterface {
 	private hashedUserID: string;
 	
 	constructor(public userID: string, public options: SponsorBlockOptions = {}) {
-		if (options.baseURL?.endsWith('/')) options.baseURL = options.baseURL.slice(0, -1);
-		this.options = { ...defaultOptions, ...options };
+		const providedOptions = { ...options };
+		if (providedOptions.baseURL?.endsWith('/')) providedOptions.baseURL = providedOptions.baseURL.slice(0, -1);
+		this.options = { ...defaultOptions, ...providedOptions };
 		this.http = axios.create({ baseURL: this.options.baseURL, validateStatus: null });
 	}
 
 	async getSegments(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
-		let res = await this.http.get('/api/skipSegments', { params: { videoID, service: this.options.service, categories: JSON.stringify(categories), ...(requiredSegments.length && { requiredSegments }) } })
+		let res = await this.http.get('/api/skipSegments', {
+			params: {
+				videoID,
+				service: this.options.service,
+				categories: JSON.stringify(categories),
+				...(requiredSegments.length > 0 ? { requiredSegments: JSON.stringify(requiredSegments) } : {}),
+			},
+		});
 		statusCheck(res);
 		let data = res.data as { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[];
 		let segments = data.map(({ UUID, segment, category, videoDuration }) => {
@@ -60,11 +69,13 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async getSegmentsPrivately(video: VideoResolvable, categories: Category[] = ['sponsor'], ...requiredSegments: string[]): Promise<Segment[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let query = `?service=${this.options.service}&categories=${JSON.stringify(categories)}`;
-		if (requiredSegments.length > 0) {
-			query += `&requiredSegments=${JSON.stringify(requiredSegments)}`;
-		}
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`, {
+			params: {
+				service: this.options.service,
+				categories: JSON.stringify(categories),
+				...(requiredSegments.length > 0 ? { requiredSegments: JSON.stringify(requiredSegments) } : {}),
+			},
+		});
 		statusCheck(res);
 		let filtered = (
 			res.data as { videoID: string; hash: string; segments: { UUID: string; segment: [number, number]; category: Category; videoDuration: number }[] }[]
@@ -115,7 +126,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async setUsername(username: string): Promise<void> {
-		let res = await this.http.get('/api/setUsername', { params: { userID: this.userID, username } })
+		let res = await this.http.post('/api/setUsername', null, { params: { userID: this.userID, username } })
 		statusCheck(res);
 		// returns nothing (status code 200)
 	}
@@ -127,11 +138,12 @@ export class SponsorBlock implements SponsorBlockInterface {
 		return data.userName;
 	}
 
+	/**
+	 * @deprecated The SponsorBlock API disables `/api/getTopUsers`; this always throws a {@link ResponseError} with status 404.
+	 */
 	async getTopUsers(sortType: SortType): Promise<UserStats[]> {
 		sortType = sortType === 'minutesSaved' ? 0 : sortType === 'viewCount' ? 1 : sortType === 'totalSubmissions' ? 2 : sortType;
-		let res = await this.http.get('/api/getTopUsers', { params: { sortType } })
-		statusCheck(res);
-		return dbuserStatsToUserStats(res.data);
+		throw new ResponseError(404, `[SponsorBlock] getTopUsers is unavailable: the SponsorBlock API disables /api/getTopUsers and always returns 404 (sortType ${sortType})`);
 	}
 
 	async getOverallStats(): Promise<OverallStats> {
@@ -170,7 +182,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	}
 
 	async getUserID(username: string, exact: boolean = false): Promise<UserIDPair[]> {
-		let res = await this.http.get('/api/userID', { params: { username } })
+		let res = await this.http.get('/api/userID', { params: { username, exact } })
 		statusCheck(res);
 		return res.data;
 	}
@@ -185,7 +197,7 @@ export class SponsorBlock implements SponsorBlockInterface {
 	async getLockCategoriesPrivately(video: VideoResolvable): Promise<Category[]> {
 		let videoID = resolveVideo(video);
 		let hashPrefix = crypto.createHash('sha256').update(videoID).digest('hex').substr(0, this.options.hashPrefixLength);
-		let res = await this.http.get(`/api/skipSegments/${hashPrefix}`)
+		let res = await this.http.get(`/api/lockCategories/${hashPrefix}`)
 		statusCheck(res);
 		let filtered = (res.data as { videoID: string; hash: string; categories: Category[] }[]).find((video) => video.videoID === videoID);
 		if (!filtered) {
